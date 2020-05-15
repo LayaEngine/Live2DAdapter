@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
-    "module": "es6",
     "target": "es6",
-    "noEmitHelpers": true,
-    "sourceMap": false
+    "sourceMap": false,
+    "moduleResolution":"Node",
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true
   },
   "exclude": [
     "node_modules"

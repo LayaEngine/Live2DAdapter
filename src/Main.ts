@@ -1,7 +1,10 @@
 import GameConfig from "./GameConfig";
+import { Delegate } from "./live2D/core/Delegate";
 import Live2DLoader from "./live2D/net/Live2DLoader";
-// import { Live2DCubismFramework } from '../framework/motion/cubismmotionqueuemanager';
-// import CubismMotionQueueManager = Live2DCubismFramework.CubismMotionQueueManager;
+import { LayaModel } from "./live2D/model/LayaModel";
+import { Live2DCubismFramework as Live2Drenderer } from "./live2D/render/Live2Drenderer";
+import CubismShader_WebGL = Live2Drenderer.CubismShader_WebGL;
+
 class Main {
 	constructor() {
 		//根据IDE设置初始化引擎		
@@ -21,13 +24,20 @@ class Main {
 		if (GameConfig.physicsDebug && Laya["PhysicsDebugDraw"]) Laya["PhysicsDebugDraw"].enable();
 		if (GameConfig.stat) Laya.Stat.show();
 		Laya.alertGlobalError(true);
-
+		CubismShader_WebGL.__init__();
+		Delegate.instance.initializeCubism();
 		let loader = new Live2DLoader();
-		loader.loadAssets("bin/res/Haru","Haru.model3.json");
-		// Laya.loader.load
+		loader.loadAssets("res/Haru","Haru.model3.json",Laya.Handler.create(this,this._loadSuccess));
+		// start
 		//激活资源版本控制，version.json由IDE发布功能自动生成，如果没有也不影响后续流程
 		// Laya.ResourceVersion.enable("version.json", Laya.Handler.create(this, this.onVersionLoaded), Laya.ResourceVersion.FILENAME_VERSION);
 	}
+
+	private _loadSuccess(model:LayaModel){
+		Laya.stage.addChild(model);
+		model.initModel();
+	}
+	
 }
 //激活启动类
 new Main();

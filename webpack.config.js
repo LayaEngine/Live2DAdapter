@@ -31,7 +31,7 @@ const dev_config = {
         new CleanWebpackPlugin(),
         new HotModuleReplacementPlugin()
     ],
-    devtool:'source-map'
+    devtool:'hidden-source-map'//'source-map'
     
 }
 const devServer_config = {

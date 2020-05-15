@@ -234,7 +234,7 @@ export namespace Live2DCubismFramework {
     protected _mvpMatrix4x4: CubismMatrix44; // Model-View-Projection 行列
     protected _modelColor: CubismTextureColor; // モデル自体のカラー（RGBA）
     protected _isCulling: boolean; // カリングが有効ならtrue
-    protected _isPremultipliedAlpha: boolean; // 乗算済みαならtrue
+    protected _isPremultipliedAlpha: boolean; // 是否预乘
     protected _anisortopy: any; // テクスチャの異方性フィルタリングのパラメータ
     protected _model: CubismModel; // レンダリング対象のモデル
   }
