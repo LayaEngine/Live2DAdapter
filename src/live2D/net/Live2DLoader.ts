@@ -26,6 +26,7 @@ export enum LoadStep {
     WaitLoadTexture,
     CompleteSetup
 }
+
 export default class Live2DLoader extends Laya.EventDispatcher{
     private _modelHomeDir:string;
     private _completeHandler:Laya.Handler;

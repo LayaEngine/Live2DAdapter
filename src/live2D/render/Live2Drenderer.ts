@@ -33,7 +33,7 @@ export namespace Live2DCubismFramework {
 
   const shaderCount = 10; // シェーダーの数 = マスク生成用 + (通常用 + 加算 + 乗算) * (マスク無の乗算済アルファ対応版 + マスク有の乗算済アルファ対応版 + マスク有反転の乗算済アルファ対応版)
   let s_instance: CubismShader_WebGL;
-  let s_viewport: number[];
+  // let s_viewport: number[];
   let s_fbo: WebGLFramebuffer;
 
   /**
@@ -541,10 +541,7 @@ export namespace Live2DCubismFramework {
         renderer.setClippingContextBufferForMask(null);
 
         this.gl.viewport(
-          s_viewport[0],
-          s_viewport[1],
-          s_viewport[2],
-          s_viewport[3]
+          0,0,Laya.Browser.mainCanvas.width,Laya.Browser.mainCanvas.height
         );
       }
     }
@@ -2125,13 +2122,13 @@ export namespace Live2DCubismFramework {
         }
       }
 
-      let drawtexture: WebGLTexture; // シェーダに渡すテクスチャ
+      // シェーダに渡すテクスチャ
+      let drawtexture: WebGLTexture = this._textures.getValue(textureNo);
 
       // テクスチャマップからバインド済みテクスチャＩＤを取得
       // バインドされていなければダミーのテクスチャIDをセットする
-      if (this._textures.getValue(textureNo) != null) {
-        drawtexture = this._textures.getValue(textureNo);
-      } else {
+      if (!drawtexture) {
+        console.log("webglTexture lost!!","color:red");
         drawtexture = null;
       }
 
@@ -2177,9 +2174,9 @@ export namespace Live2DCubismFramework {
      * 设置渲染状态
      * @param viewport ビューポート
      */
-    public setRenderState(viewport: number[]): void {
-      s_viewport = viewport;
-    }
+    // public setRenderState(viewport: number[]): void {
+    //   s_viewport = viewport;
+    // }
 
     /**
      * 描画開始時の追加処理

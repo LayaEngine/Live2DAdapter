@@ -35,7 +35,7 @@ export namespace Live2DCubismFramework {
     }
 
     /**
-     * キャンバスの幅を取得する
+     * 获取画布的宽度
      */
     public getCanvasWidth(): number {
       if (this._model == null) {
@@ -49,7 +49,7 @@ export namespace Live2DCubismFramework {
     }
 
     /**
-     * キャンバスの高さを取得する
+     * 获取画布的高度
      */
     public getCanvasHeight(): number {
       if (this._model == null) {
@@ -229,7 +229,7 @@ export namespace Live2DCubismFramework {
     }
 
     /**
-     * パラメータの最大値の取得
+     * 获取参数的最大值
      * @param parameterIndex パラメータのインデックス
      * @return パラメータの最大値
      */

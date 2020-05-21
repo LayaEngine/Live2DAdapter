@@ -5,6 +5,7 @@ import { LayaModel } from "./live2D/model/LayaModel";
 import { Live2DCubismFramework as Live2Drenderer } from "./live2D/render/Live2Drenderer";
 import CubismShader_WebGL = Live2Drenderer.CubismShader_WebGL;
 
+
 class Main {
 	constructor() {
 		//根据IDE设置初始化引擎		

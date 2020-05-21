@@ -71,24 +71,11 @@ export namespace Live2DCubismFramework {
      */
     public loadIdentity(): void {
       const c: Float32Array = new Float32Array([
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0
+        1.0, 0.0, 0.0, 0.0,
+        0.0, 1.0, 0.0, 0.0,
+        0.0, 0.0, 1.0, 0.0,
+        0.0, 0.0, 0.0, 1.0
       ]);
-
       this.setMatrix(c);
     }
 
@@ -138,7 +125,7 @@ export namespace Live2DCubismFramework {
     }
 
     /**
-     * Y軸の移動量を取得
+     * 获得Y轴运动
      * @return Y軸の移動量
      */
     public getTranslateY(): number {
@@ -146,7 +133,7 @@ export namespace Live2DCubismFramework {
     }
 
     /**
-     * X軸の値を現在の行列で計算
+     * 用当前矩阵计算X轴值
      *
      * @param src X軸の値
      * @return 現在の行列で計算されたX軸の値
@@ -156,7 +143,7 @@ export namespace Live2DCubismFramework {
     }
 
     /**
-     * Y軸の値を現在の行列で計算
+     * 用当前矩阵计算y轴值
      *
      * @param src Y軸の値
      * @return 現在の行列で計算されたY軸の値
@@ -180,7 +167,7 @@ export namespace Live2DCubismFramework {
     }
 
     /**
-     * 現在の行列の位置を起点にして移動
+     * 从当前矩阵位置开始
      *
      * 現在の行列の位置を起点にして相対的に移動する。
      *

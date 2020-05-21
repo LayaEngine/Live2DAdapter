@@ -21,11 +21,13 @@ import { Live2DCubismFramework as cubismmotionqueuemanager } from '../../framewo
 import { Live2DCubismFramework as csmstring } from '../../framework/type/csmstring';
 import { Live2DCubismFramework as cubismtargetpoint } from '../../framework/math/cubismtargetpoint';
 import { Live2DCubismFramework as cubismrenderer_webgl } from '../render/Live2Drenderer';
+import { Live2DCubismFramework as cubismmatrix44 } from '../../framework/math/cubismmatrix44';
 
 import CubismRenderer_WebGL = cubismrenderer_webgl.CubismRenderer_WebGL;
 import FinishedMotionCallback = acubismmotion.FinishedMotionCallback;
 import CubismModelUserData = cubismmodeluserdata.CubismModelUserData;
 import CubismIdHandle = cubismid.CubismIdHandle;
+import CubismMatrix44 = cubismmatrix44.CubismMatrix44;
 import CubismPose = cubismpose.CubismPose;
 import CubismMoc = cubismmoc.CubismMoc;
 import CubismBreath = cubismbreath.CubismBreath;
@@ -124,8 +126,9 @@ export class LayaModel extends Laya.Sprite{
     private _lipsync: boolean;
     // 渲染器
     private _renderer: CubismRenderer_WebGL; 
+    /**默认从0-width 0-height 视口数组 */
+    // private s_viewport:number[] = [0,0,0,0]
 
-    // _sortedDrawableIndexList: csmVector<number> = new csmVector<number>(); 
     constructor(){
       super();
       this._userTimeSeconds = 0;
@@ -178,6 +181,9 @@ export class LayaModel extends Laya.Sprite{
         this._model.getCanvasWidth(),
         this._model.getCanvasHeight()
       );
+
+      this.width = this._model.getModel().canvasinfo.CanvasWidth;
+      this.height = this._model.getModel().canvasinfo.CanvasHeight;
     } 
 
     public createSetting(buffer:ArrayBuffer):void{
@@ -391,10 +397,16 @@ export class LayaModel extends Laya.Sprite{
         }
         return tmpMotion;
     }
+
     /**
      * 加载完成 init模型
      */
     public initModel():void{
+      // 全てのモーションを停止する
+      this._motionManager.stopAllMotions();
+      this._initialized = true;
+      this.createRenderer();
+
       this._texturePool = {};
       let element:string,texture:Laya.Texture;
       for (let index = 0; index < this._textureUrls.length; index++) {
@@ -404,12 +416,11 @@ export class LayaModel extends Laya.Sprite{
           console.warn("Texture load fail! url:"+element);
           return
         }
+        this.renderer.bindTexture(index,(texture.bitmap as any)._glTexture);
+        // debugger
         this._texturePool[index] = texture;
       }
-      // 全てのモーションを停止する
-      this._motionManager.stopAllMotions();
-      this._initialized = true;
-      this.createRenderer();
+      
       Laya.timer.frameLoop(1,this,this.update);
     }
 
@@ -417,6 +428,8 @@ export class LayaModel extends Laya.Sprite{
      * 动画更新
      */
     public update():void{
+      // this.graphics.clear();
+      // this.graphics.drawRect(0,0,this.width,this.height,"red")
       Live2DTime.updateTime();
       let deltaTimeSeconds: number = Live2DTime.getDeltaTime();
       this._userTimeSeconds += deltaTimeSeconds;
@@ -500,13 +513,57 @@ export class LayaModel extends Laya.Sprite{
         this._pose.updateParameters(this._model, deltaTimeSeconds);
       }
 
+      let projection: CubismMatrix44 = new CubismMatrix44();
+      let { width, height } =  Laya.Browser.mainCanvas;
+      // projection.scale(5,5);
+      let scaleNum = 1;
+      projection.scale(scaleNum ,scaleNum * width / height);
+      // let canvasx = this.x * this.stage.clientScaleX 
+      // let s = 2/this._model.getCanvasWidth();
+      // let float :Float32Array = new Float32Array(max);
+      // projection.setMatrix(float)
+      // projection.scale(,2/this._model.getCanvasWidth());
+      // projection.scale(this._model.getCanvasWidth() /(width * Laya.stage.clientScaleX) , this._model.getCanvasWidth() / (Laya.stage.clientScaleY * height) );
+      // projection.translate(this.width, 1);
+      // projection.translate( 0, 1/height);
+
       this._model.update();
-      // キャンバスサイズを渡す
-      const viewport: number[] = [0, 0, Laya.Browser.mainCanvas.width, Laya.Browser.mainCanvas.height];
-      this._renderer.setRenderState(viewport);
+      projection.multiplyByMatrix(this._modelMatrix);
+
+      this.renderer.setMvpMatrix(projection);
+      // 通过画布尺寸
+      // this._renderer.setRenderState(this.s_viewport);
       this._renderer.doDrawModel();
     }
 
+    /**
+     * @inheritdoc
+     */
+    // public set width(value:number){
+    //   super.width = value;
+    //   // this.s_viewport[2] = value * Laya.stage.clientScaleX;
+    // }
+    // /**
+    //  * @inheritdoc
+    //  */
+    // public get width(){
+    //   return super.width;
+    // }
+
+    // /**
+    //  * @inheritdoc
+    //  */
+    // public set height(value){
+    //   super.height = value;
+    //   this.s_viewport[3] = value * Laya.stage.clientScaleY;
+    // }
+    // /**
+    //  * @inheritdoc
+    //  */
+    // public get height(){
+    //   return super.height;
+    // }
+   
     /**
      * 渲染器获取，不推荐获取去使用结果不可控
      * @return CubismRenderer_WebGL
@@ -544,41 +601,6 @@ export class LayaModel extends Laya.Sprite{
       return this._model;
     }
 
-    // private draw(){
-    //   const drawableCount: number = this.getModel().getDrawableCount();
-    //   const renderOrder: Int32Array = this.getModel().getDrawableRenderOrders();
-
-    //   // インデックスを描画順でソート
-    //   for (let i = 0; i < drawableCount; ++i) {
-    //     const order: number = renderOrder[i];
-    //     this._sortedDrawableIndexList.set(order, i);
-    //   }
-
-    //   // 描画
-    //   for (let i = 0; i < drawableCount; ++i) {
-    //     const drawableIndex: number = this._sortedDrawableIndexList.at(i);
-
-    //     // Drawableが表示状態でなければ処理をパスする
-    //     if (!this.getModel().getDrawableDynamicFlagIsVisible(drawableIndex)) {
-    //       continue;
-    //     }
-
-    //     // this.setIsCulling(this.getModel().getDrawableCulling(drawableIndex));
-
-    //       let textureindex = this.getModel().getDrawableTextureIndices(drawableIndex);
-    //       let texture:Laya.Texture = this._texturePool[textureindex];
-    //       // this.getModel().getDrawableVertexIndexCount(drawableIndex),
-    //       // this.getModel().getDrawableVertexCount(drawableIndex),
-    //       let ib = this.getModel().getDrawableVertexIndices(drawableIndex);
-    //       let vb = this.getModel().getDrawableVertices(drawableIndex);
-    //       let uv = this.getModel().getDrawableVertexUvs(drawableIndex);
-    //       // this.getModel().getDrawableOpacity(drawableIndex),
-    //       // this.getModel().getDrawableBlendMode(drawableIndex),
-    //       // this.getModel().getDrawableInvertedMaskBit(drawableIndex)
-    //       this.graphics.clear();
-    //       this.graphics.drawTriangles(texture,0,0,vb,uv,ib);
-    //   }
-    // }
     /**
      * @readonly
      * 动作管理
