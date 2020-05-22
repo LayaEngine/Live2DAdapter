@@ -64,7 +64,6 @@ gulp.task("compile", prevTasks, function () {
 			file: workSpaceDir + '/bin/js/bundle.js',
 			format: 'iife',
 			name: 'laya',
-			exports:"Live2DCubismFramework",
 			sourcemap: false
 		});
 	}).catch(err=>{
