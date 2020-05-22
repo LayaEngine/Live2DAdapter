@@ -52,6 +52,7 @@ import CubismTargetPoint = cubismtargetpoint.CubismTargetPoint;
 
 import { Live2DTime } from '../core/Live2DTime';
 import { Live2DConfig } from '../core/Live2DConfig';
+import { Live2DSubmit } from '../render/Live2DSubmit';
 
 /**
  * 继承自framework model，Laya封装加载
@@ -139,8 +140,8 @@ export class LayaModel extends Laya.Sprite{
     private scaleAndTran: CubismMatrix44
     /**mvp矩阵 */
     private mvpMatrix:CubismMatrix44;
-    /**计算用Point */
-    private _transPoint:Laya.Point;
+    /**记录矩阵 */
+    private _lastMat:Laya.Matrix;
 
     constructor(){
       super();
@@ -148,7 +149,8 @@ export class LayaModel extends Laya.Sprite{
       this.mouseEnabled = true;
       this._userTimeSeconds = 0;
       this._lipsync = false;
-      this._transPoint = new Laya.Point();
+      this._lastMat = new Laya.Matrix();
+      this.customRenderEnable = true;
       this.scaleAndTran = new CubismMatrix44();
       this._motionManager = new CubismMotionManager();
       this._motionManager.setEventCallback(
@@ -448,19 +450,36 @@ export class LayaModel extends Laya.Sprite{
         this._texturePool[index] = texture;
       }
       this.renderer.setIsPremultipliedAlpha(isPremultipliedAlpha);
-      Laya.timer.frameLoop(1,this,this.update);
+      // Laya.timer.frameLoop(1,this,this.update);
     }
-
-    public render(ctx:Laya.Context,x:number,y:number){
-      console.log(x,y);
+    
+    public customRender(context:Laya.Context,x:number,y:number){
+      let _cMat:Laya.Matrix = (context as any)._curMat;
+      let hasChange = false;
+      if(this._lastMat.a != _cMat.a){
+        this._lastMat.a = _cMat.a;
+        hasChange = true;
+      } 
+      if(this._lastMat.d != _cMat.d){
+        this._lastMat.d = _cMat.d;
+        hasChange = true;
+      }
+      if(_cMat.tx != this._lastMat.tx){
+        this._lastMat.tx = _cMat.tx;
+        hasChange = true;
+      }
+      if(this._lastMat.ty != _cMat.ty){
+        this._lastMat.ty = _cMat.ty;
+        hasChange = true;
+      }
+      hasChange&&this.refreshScaleAndTranM();
+      context.addRenderObject(Live2DSubmit.create(this));
     }
     /**
      * 动画更新
      */
     public update():void{
       this.renderer.gl.start();
-      // this.graphics.clear();
-      // this.graphics.drawRect(0,0,this.width,this.height,"red");
       Live2DTime.updateTime();
       let deltaTimeSeconds: number = Live2DTime.getDeltaTime();
       this._userTimeSeconds += deltaTimeSeconds;
@@ -544,29 +563,24 @@ export class LayaModel extends Laya.Sprite{
         this._pose.updateParameters(this._model, deltaTimeSeconds);
       }
 
-      if((this as any)._tfChanged){
-        this.refreshScaleAndTranM();
-      }
       this.mvpMatrix = this.scaleAndTran.clone();
       this.mvpMatrix.multiplyByMatrix(this.projection);
       this._model.update();
-      // projection.multiplyByMatrix(this._modelMatrix);
       this.renderer.setMvpMatrix(this.mvpMatrix);
       // 通过画布尺寸
-      // this._renderer.setRenderState(this.s_viewport);
       this._renderer.doDrawModel();
       this.renderer.gl.end();
     }
+
     /**
      * 重新生成缩放与位移矩阵
      */
     public refreshScaleAndTranM(){
-      this.scaleAndTran.scale(this.scaleX,this.scaleY);
+      let a = this._lastMat.a ,d = this._lastMat.d,x = this._lastMat.tx,y = this._lastMat.ty;
+      this.scaleAndTran.scale(a,d);
       let { width , height} = Laya.Browser.mainCanvas;
-      this._transPoint.setTo(this.x,this.y);
-      this.localToGlobal(this._transPoint,false);
-      let canvasx = (this._transPoint.x * this.stage.clientScaleX + this.scaleX * this.modelWidth / 2 /**像素位置 */) * 2 / width -1;
-      let canvasy = 1 - (this._transPoint.y * this.stage.clientScaleY + this.scaleY * this.modelHeight / 2 /**像素位置 */) * 2 / height;
+      let canvasx = (x * this.stage.clientScaleX + a * this.modelWidth / 2 /**像素位置 */) * 2 / width -1;
+      let canvasy = 1 - (y * this.stage.clientScaleY + d * this.modelHeight / 2 /**像素位置 */) * 2 / height;
       this.scaleAndTran.translate(canvasx,canvasy);
     }
     

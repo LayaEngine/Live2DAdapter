@@ -38,9 +38,9 @@ class Main {
 	private _loadSuccess(model:LayaModel){
 		model.initModel();
 		Laya.stage.addChild(model);
-		// Laya.loader.load(["res/atlas/comp.atlas","res/atlas/test.atlas"],Laya.Handler.create(this,()=>{
-		// 	Laya.stage.addChild(new GameUI());
-		// }))
+		Laya.loader.load(["res/atlas/comp.atlas","res/atlas/test.atlas"],Laya.Handler.create(this,()=>{
+			Laya.stage.addChild(new GameUI());
+		}))
 		model.scale(0.1,0.1);
 		model.on(Laya.Event.MOUSE_DOWN,this,this.onMouseDown,[model])
 	}

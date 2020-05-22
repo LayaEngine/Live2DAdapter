@@ -43,6 +43,7 @@ export class Live2DGL {
 
     constructor(gl:WebGLRenderingContext) {
         this.saveParameter = {};
+        this.saveParameter.vertexs = [];
         this._gl = gl;
         this.FRAMEBUFFER = this._gl.FRAMEBUFFER;
         this.COLOR_ATTACHMENT0 = this._gl.COLOR_ATTACHMENT0;
@@ -108,8 +109,29 @@ export class Live2DGL {
         //记录bindframebuffer
         this.saveParameter.FRAMEBUFFER_BINDING = this._gl.getParameter(this._gl.FRAMEBUFFER_BINDING);
         //记录vertexAttribPointer
-        // this._gl.getVertexAttrib()
-        
+
+        let enable:GLboolean,data:any;
+        let vertexs = this.saveParameter.vertexs
+        vertexs.length = 0;
+        let max = this._gl.getParameter(this._gl.MAX_VERTEX_ATTRIBS)
+        for (let index = 0; index < max; index++) {
+            enable = this._gl.getVertexAttrib(index,this._gl.VERTEX_ATTRIB_ARRAY_ENABLED);
+            if(enable){
+                data = vertexs[index] = {};
+                data.index = index;
+                // （index，size，type，normalized，stride，offset）
+                data.buffer = this._gl.getVertexAttrib(index,this._gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING);
+                data.size = this._gl.getVertexAttrib(index,this._gl.VERTEX_ATTRIB_ARRAY_SIZE);
+                data.type = this._gl.getVertexAttrib(index,this._gl.VERTEX_ATTRIB_ARRAY_TYPE);
+                data.normalized = this._gl.getVertexAttrib(index,this._gl.VERTEX_ATTRIB_ARRAY_NORMALIZED);
+                data.stride = this._gl.getVertexAttrib(index,this._gl.VERTEX_ATTRIB_ARRAY_STRIDE);
+                data.offset = this._gl.getVertexAttribOffset(index,this._gl.VERTEX_ATTRIB_ARRAY_POINTER);
+            }else
+            {
+                // console.log(`${index},is disable`);
+                break;
+            }
+        }
     }
 
     end():void{
@@ -142,6 +164,14 @@ export class Live2DGL {
         this._gl.useProgram(this.saveParameter.program);
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER,this.saveParameter.ARRAY_BUFFER_BINDING);
         this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER,this.saveParameter.ELEMENT_ARRAY_BUFFER_BINDING);
+
+        let vertexs = this.saveParameter.vertexs;
+        for (let index = 0; index < vertexs.length; index++) {
+            const element = vertexs[index];
+            this._gl.bindBuffer(this._gl.ARRAY_BUFFER,element.buffer);
+            this._gl.enableVertexAttribArray(element.index);
+            this._gl.vertexAttribPointer(element.index,element.size,element.type,element.normalized,element.stride,element.offset);
+        }
     }
 
     blendFuncSeparate(srcRGB: GLenum, dstRGB: GLenum, srcAlpha: GLenum, dstAlpha: GLenum):void{
