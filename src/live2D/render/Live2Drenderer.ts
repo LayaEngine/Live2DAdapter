@@ -1990,9 +1990,9 @@ export namespace Live2DCubismFramework {
       this._textures = new csmMap<number, number>();
       this._sortedDrawableIndexList = new csmVector<number>();
       this._bufferData = {
-        vertex: WebGLBuffer = null,
-        uv: WebGLBuffer = null,
-        index: WebGLBuffer = null
+        vertex: null,
+        uv: null,
+        index: null
       };
 
       // テクスチャ対応マップの容量を確保しておく

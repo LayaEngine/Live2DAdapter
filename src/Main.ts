@@ -23,6 +23,7 @@ class Main {
 		if (GameConfig.physicsDebug && Laya["PhysicsDebugDraw"]) Laya["PhysicsDebugDraw"].enable();
 		if (GameConfig.stat) Laya.Stat.show();
 		Laya.alertGlobalError(true);
+		Laya.Browser.onMiniGame&&(Laya.URL.basePath = "https://10.10.82.100:9001/")
 		//初始化渲染gl相关
 		CubismShader_WebGL.__init__();
 		//编译live2dshader
