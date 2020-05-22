@@ -8,7 +8,7 @@
  /**
   * 修改记录：
   * 1.删除了输出类的引用
-  * 2.gl设置为static
+  * 2.gl改为了封装的LayaGL
   */
 import { Live2DCubismFramework as cubismframework } from '../../framework/live2dcubismframework';
 import { Live2DCubismFramework as csmrect } from '../../framework/type/csmrectf';
@@ -26,7 +26,6 @@ import CubismModel = cubismmodel.CubismModel;
 import CubismRenderer = cubismrenderer.CubismRenderer;
 import CubismBlendMode = cubismrenderer.CubismBlendMode;
 import CubismTextureColor = cubismrenderer.CubismTextureColor;
-import { Live2DGL } from './Live2DGL';
 
 export namespace Live2DCubismFramework {
   const ColorChannelCount = 4; // 実験時に1チャンネルの場合は1、RGBだけの場合は3、アルファも含める場合は4
@@ -741,7 +740,7 @@ export namespace Live2DCubismFramework {
     private _tmpBoundsOnModel: csmRect; // マスク配置計算用の矩形
 
     // 封装的gl
-    public get gl(): Live2DGL{
+    public get gl(): WebGLRenderingContext{
         return CubismShader_WebGL.gl;
     } 
   }
@@ -852,7 +851,7 @@ export namespace Live2DCubismFramework {
   export class CubismShader_WebGL {
     public static __init__():void{
         CubismShader_WebGL.getInstance();
-        CubismShader_WebGL.gl = new Live2DGL((window as any).Laya.LayaGL.instance);
+        CubismShader_WebGL.gl = (window as any).Laya.LayaGL.instance;
         s_fbo = CubismShader_WebGL.gl.getParameter(CubismShader_WebGL.gl.FRAMEBUFFER_BINDING);
     }
     /**
@@ -1752,12 +1751,12 @@ export namespace Live2DCubismFramework {
       return shader;
     }
 
-    public get gl():Live2DGL{
+    public get gl():WebGLRenderingContext{
         return CubismShader_WebGL.gl
     }
 
     _shaderSets: csmVector<CubismShaderSet>; // ロードしたシェーダープログラムを保持する変数
-    static gl: Live2DGL; // webglコンテキスト
+    static gl: WebGLRenderingContext; // webglコンテキスト
   }
 
   /**
@@ -2257,7 +2256,7 @@ export namespace Live2DCubismFramework {
       index: WebGLBuffer;
     }; // 頂点バッファデータ
     // webglコンテキスト
-    public get gl(): Live2DGL{
+    public get gl(): WebGLRenderingContext{
         return CubismShader_WebGL.gl;
     }
   }

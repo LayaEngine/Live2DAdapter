@@ -50,7 +50,6 @@ import CubismMotionManager = cubismmotionmanager.CubismMotionManager;
 import csmString = csmstring.csmString;
 import CubismTargetPoint = cubismtargetpoint.CubismTargetPoint;
 
-import { Live2DTime } from '../core/Live2DTime';
 import { Live2DConfig } from '../core/Live2DConfig';
 import { Live2DSubmit } from '../render/Live2DSubmit';
 
@@ -477,13 +476,10 @@ export class LayaModel extends Laya.Sprite{
     }
     /**
      * 动画更新
+     * @param deltaTimeSeconds 更新时间
      */
-    public update():void{
-      this.renderer.gl.start();
-      Live2DTime.updateTime();
-      let deltaTimeSeconds: number = Live2DTime.getDeltaTime();
+    public update(deltaTimeSeconds:number):void{
       this._userTimeSeconds += deltaTimeSeconds;
-
       this._dragManager.update(deltaTimeSeconds);
       this._dragX = this._dragManager.getX();
       this._dragY = this._dragManager.getY();
@@ -569,7 +565,6 @@ export class LayaModel extends Laya.Sprite{
       this.renderer.setMvpMatrix(this.mvpMatrix);
       // 通过画布尺寸
       this._renderer.doDrawModel();
-      this.renderer.gl.end();
     }
 
     /**

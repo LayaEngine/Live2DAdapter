@@ -1,4 +1,4 @@
-import { LayaModel } from "../model/LayaModel";
+import { LayaModel } from "../model/Live2DModel";
 
 
 export enum LoadStep {
