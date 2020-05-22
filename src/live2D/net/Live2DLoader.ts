@@ -1,4 +1,4 @@
-import { LayaModel } from "../model/Live2DModel";
+import { Live2DModel } from "../model/Live2DModel";
 
 
 export enum LoadStep {
@@ -30,7 +30,7 @@ export enum LoadStep {
 export default class Live2DLoader extends Laya.EventDispatcher{
     private _modelHomeDir:string;
     private _completeHandler:Laya.Handler;
-    private _model:LayaModel;
+    private _model:Live2DModel;
     public state:LoadStep;
 
     constructor(){
@@ -43,7 +43,7 @@ export default class Live2DLoader extends Laya.EventDispatcher{
      * @param fileName 
      */
     public loadAssets(dir:string,fileName:string,complete:Laya.Handler = null):void{
-        this._model =  new LayaModel();
+        this._model =  new Live2DModel();
         this._model._modelHomeDir = this._modelHomeDir = dir;
         this._completeHandler = complete;
         Laya.loader.load(`${dir}/${fileName}`,Laya.Handler.create(this,this._loadAssetsComplete),null,Laya.Loader.BUFFER);

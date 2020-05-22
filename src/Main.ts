@@ -1,7 +1,7 @@
 import GameConfig from "./GameConfig";
 import { Delegate } from "./live2D/core/Delegate";
 import Live2DLoader from "./live2D/net/Live2DLoader";
-import { LayaModel } from "./live2D/model/Live2DModel";
+import { Live2DModel } from "./live2D/model/Live2DModel";
 import { Live2DCubismFramework as Live2Drenderer } from "./live2D/render/Live2Drenderer";
 import CubismShader_WebGL = Live2Drenderer.CubismShader_WebGL;
 import GameUI from "./script/GameUI";
@@ -38,7 +38,7 @@ class Main {
 		// Laya.ResourceVersion.enable("version.json", Laya.Handler.create(this, this.onVersionLoaded), Laya.ResourceVersion.FILENAME_VERSION);
 	}
 
-	private _loadSuccess(model:LayaModel){
+	private _loadSuccess(model:Live2DModel){
 		model.initModel();
 		Laya.stage.addChild(model);
 		Laya.loader.load(["res/atlas/comp.atlas","res/atlas/test.atlas"],Laya.Handler.create(this,()=>{
@@ -47,14 +47,29 @@ class Main {
 		//缩放下
 		model.scale(0.1,0.1);
 		model.on(Laya.Event.MOUSE_DOWN,this,this.onMouseDown,[model])
+		Laya.stage.on(Laya.Event.MOUSE_DOWN,this,this.stageOnMouseDown,[model])
 	}
-
-	private onMouseDown(model:LayaModel):void{
+	private stageOnMouseDown(model:Live2DModel):void{
+		Laya.stage.on(Laya.Event.MOUSE_MOVE,this,this.onMouseMove,[model])
+		Laya.stage.on(Laya.Event.MOUSE_OUT,this,this.onMouseUp,[model])
+		Laya.stage.on(Laya.Event.MOUSE_UP,this,this.onMouseUp,[model])
+	}
+	private onMouseDown(model:Live2DModel):void{
 		// console.log("trueture")
 		if(model.live2DHitTest("Body",Laya.MouseManager.instance.mouseX ,Laya.MouseManager.instance.mouseY)){
 			// console.log("点击到了Body");
 			model.setRandomExpression();
 		};
+		
+	}
+
+	private onMouseUp(model:Live2DModel){
+		Laya.stage.off(Laya.Event.MOUSE_MOVE,this,this.onMouseMove)
+		Laya.stage.off(Laya.Event.MOUSE_OUT,this,this.onMouseUp)
+		Laya.stage.off(Laya.Event.MOUSE_UP,this,this.onMouseUp)
+	}
+	private onMouseMove(model:Live2DModel){
+		model.setDragging(Laya.MouseManager.instance.mouseX,Laya.MouseManager.instance.mouseY)
 	}
 	
 }

@@ -1,8 +1,8 @@
-import { LayaModel } from "../model/Live2DModel";
+import { Live2DModel } from "../model/Live2DModel";
 import { Live2DTime } from "../core/Live2DTime";
 export class Live2DSubmit implements laya.webgl.submit.ISubmit{
     static TYPE_LIVE2D:number = 11000;
-    private _model:LayaModel;
+    private _model:Live2DModel;
     _key:any = {};
     private saveParameter:any;
     constructor(){
@@ -121,7 +121,7 @@ export class Live2DSubmit implements laya.webgl.submit.ISubmit{
         }
     }
 
-    static create(model:LayaModel):Live2DSubmit{
+    static create(model:Live2DModel):Live2DSubmit{
         let o:Live2DSubmit = Laya.Pool.getItemByClass("Live2DSubmit_Pool",Live2DSubmit);
         o.init(model);
         return o;

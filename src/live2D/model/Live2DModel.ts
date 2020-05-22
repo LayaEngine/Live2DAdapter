@@ -56,7 +56,7 @@ import { Live2DSubmit } from '../render/Live2DSubmit';
 /**
  * 继承自framework model，Laya封装加载
  */
-export class LayaModel extends Laya.Sprite{
+export class Live2DModel extends Laya.Sprite{
     /**模型实例 */
     private _model:CubismModel;
     /**型号设定信息 */
@@ -153,7 +153,7 @@ export class LayaModel extends Laya.Sprite{
       this.scaleAndTran = new CubismMatrix44();
       this._motionManager = new CubismMotionManager();
       this._motionManager.setEventCallback(
-        LayaModel.cubismDefaultMotionEventCallback,
+        Live2DModel.cubismDefaultMotionEventCallback,
         this
       );
       this._expressionManager = new CubismMotionManager();
@@ -483,7 +483,6 @@ export class LayaModel extends Laya.Sprite{
       this._dragManager.update(deltaTimeSeconds);
       this._dragX = this._dragManager.getX();
       this._dragY = this._dragManager.getY();
-
       // モーションによるパラメータ更新の有無
       let motionUpdated = false;
 
@@ -722,6 +721,8 @@ export class LayaModel extends Laya.Sprite{
      * @param 拖动光标的Y位置
      */
     public setDragging(x: number, y: number): void {
+      x = x * 2 / Laya.Browser.mainCanvas.width - 1;
+      y = 1 - y * 2 / Laya.Browser.mainCanvas.height ;
       this._dragManager.set(x, y);
     }
 
@@ -982,7 +983,7 @@ export class LayaModel extends Laya.Sprite{
     public static cubismDefaultMotionEventCallback(
       caller: CubismMotionQueueManager,
       eventValue: csmString,
-      customData: LayaModel
+      customData: Live2DModel
     ):void{
       customData.motionEventFired(eventValue);
     }
