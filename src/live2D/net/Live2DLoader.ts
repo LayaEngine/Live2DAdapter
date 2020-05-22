@@ -203,7 +203,7 @@ export default class Live2DLoader extends Laya.EventDispatcher{
         let texturePath;
         for(let i = 0;i<textureCount;i++){
             texturePath = `${this._modelHomeDir}/${this._model.setting.getTextureFileName(i)}`;
-            this._model._textureUrls.push(texturePath);
+            this._model._textureUrls.push({url:texturePath,type:"nativeimage"});
         }
         Laya.loader.load(this._model._textureUrls.slice(),Laya.Handler.create(this,this.loadComplete))
     }

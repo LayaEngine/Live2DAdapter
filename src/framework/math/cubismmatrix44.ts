@@ -267,6 +267,22 @@ export namespace Live2DCubismFramework {
       this._tr[0] = x;
       this._tr[5] = y;
     }
+    
+    /**
+     * 現在の行列の拡大率を指定した倍率に設定する
+     * @param y Y軸の拡大率
+     */
+    public scaleX(x:number):void{
+      this._tr[0] = x;
+    }
+
+    /**
+     * 現在の行列の拡大率を指定した倍率に設定する
+     * @param y Y軸の拡大率
+     */
+    public scaleY(y:number):void{
+      this._tr[5] = y
+    }
 
     /**
      * 現在の行列に行列を乗算

@@ -4,13 +4,12 @@ import Live2DLoader from "./live2D/net/Live2DLoader";
 import { LayaModel } from "./live2D/model/LayaModel";
 import { Live2DCubismFramework as Live2Drenderer } from "./live2D/render/Live2Drenderer";
 import CubismShader_WebGL = Live2Drenderer.CubismShader_WebGL;
+import GameUI from "./script/GameUI";
 
 
 class Main {
 	constructor() {
-		//根据IDE设置初始化引擎		
-		if (window["Laya3D"]) Laya3D.init(GameConfig.width, GameConfig.height);
-		else Laya.init(GameConfig.width, GameConfig.height, Laya["WebGL"]);
+		Laya.init(1080,720, Laya["WebGL"]);
 		Laya["Physics"] && Laya["Physics"].enable();
 		Laya["DebugPanel"] && Laya["DebugPanel"].enable();
 		Laya.stage.scaleMode = GameConfig.scaleMode;
@@ -25,18 +24,33 @@ class Main {
 		if (GameConfig.physicsDebug && Laya["PhysicsDebugDraw"]) Laya["PhysicsDebugDraw"].enable();
 		if (GameConfig.stat) Laya.Stat.show();
 		Laya.alertGlobalError(true);
+
 		CubismShader_WebGL.__init__();
 		Delegate.instance.initializeCubism();
+
 		let loader = new Live2DLoader();
-		loader.loadAssets("res/Haru","Haru.model3.json",Laya.Handler.create(this,this._loadSuccess));
-		// start
+		loader.loadAssets("res/Hiyori","Hiyori.model3.json",Laya.Handler.create(this,this._loadSuccess));
 		//激活资源版本控制，version.json由IDE发布功能自动生成，如果没有也不影响后续流程
+		
 		// Laya.ResourceVersion.enable("version.json", Laya.Handler.create(this, this.onVersionLoaded), Laya.ResourceVersion.FILENAME_VERSION);
 	}
 
 	private _loadSuccess(model:LayaModel){
-		Laya.stage.addChild(model);
 		model.initModel();
+		Laya.stage.addChild(model);
+		// Laya.loader.load(["res/atlas/comp.atlas","res/atlas/test.atlas"],Laya.Handler.create(this,()=>{
+		// 	Laya.stage.addChild(new GameUI());
+		// }))
+		model.scale(0.1,0.1);
+		model.on(Laya.Event.MOUSE_DOWN,this,this.onMouseDown,[model])
+	}
+
+	private onMouseDown(model:LayaModel):void{
+		// console.log("trueture")
+		if(model.live2DHitTest("Body",Laya.MouseManager.instance.mouseX ,Laya.MouseManager.instance.mouseY)){
+			// console.log("点击到了Body");
+			model.setRandomExpression();
+		};
 	}
 	
 }

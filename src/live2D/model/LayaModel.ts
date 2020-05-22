@@ -27,6 +27,7 @@ import CubismRenderer_WebGL = cubismrenderer_webgl.CubismRenderer_WebGL;
 import FinishedMotionCallback = acubismmotion.FinishedMotionCallback;
 import CubismModelUserData = cubismmodeluserdata.CubismModelUserData;
 import CubismIdHandle = cubismid.CubismIdHandle;
+import Constant = live2dcubismframework.Constant;
 import CubismMatrix44 = cubismmatrix44.CubismMatrix44;
 import CubismPose = cubismpose.CubismPose;
 import CubismMoc = cubismmoc.CubismMoc;
@@ -111,9 +112,9 @@ export class LayaModel extends Laya.Sprite{
 
     private _initialized = true;
     /**贴图urls */
-    public _textureUrls:Array<string>;
+    public _textureUrls:Array<any>;
     /**贴图池子 */
-    public _texturePool:any;
+    public _texturePool:Array<Laya.Texture2D>;
     //鼠标拖动
     private _dragManager:CubismTargetPoint;
     // 增量时间积分值[秒]
@@ -128,11 +129,27 @@ export class LayaModel extends Laya.Sprite{
     private _renderer: CubismRenderer_WebGL; 
     /**默认从0-width 0-height 视口数组 */
     // private s_viewport:number[] = [0,0,0,0]
+    /**还原矩阵*/
+    private projection:CubismMatrix44;
+    /**模型宽 */
+    public modelWidth:number;
+    /**模型高 */
+    public modelHeight:number;
+    /**缩放与平移矩阵 */
+    private scaleAndTran: CubismMatrix44
+    /**mvp矩阵 */
+    private mvpMatrix:CubismMatrix44;
+    /**计算用Point */
+    private _transPoint:Laya.Point;
 
     constructor(){
       super();
+      this.mouseThrough = false;
+      this.mouseEnabled = true;
       this._userTimeSeconds = 0;
       this._lipsync = false;
+      this._transPoint = new Laya.Point();
+      this.scaleAndTran = new CubismMatrix44();
       this._motionManager = new CubismMotionManager();
       this._motionManager.setEventCallback(
         LayaModel.cubismDefaultMotionEventCallback,
@@ -181,14 +198,19 @@ export class LayaModel extends Laya.Sprite{
         this._model.getCanvasWidth(),
         this._model.getCanvasHeight()
       );
-
-      this.width = this._model.getModel().canvasinfo.CanvasWidth;
-      this.height = this._model.getModel().canvasinfo.CanvasHeight;
+      this.projection = new CubismMatrix44();
+      this.modelWidth = this._model.getModel().canvasinfo.CanvasWidth;
+      this.modelHeight =  this._model.getModel().canvasinfo.CanvasHeight;
+      let { width , height } = Laya.Browser.mainCanvas;
+      let scaleNum :number = this.modelWidth * 2 / width  ;
+      this.projection.scale(scaleNum , scaleNum * width/height);
+      this.width = this.modelWidth / Laya.stage.clientScaleX;
+      this.height = this.modelHeight / Laya.stage.clientScaleY;
     } 
 
     public createSetting(buffer:ArrayBuffer):void{
       this._initialized = false;
-        this.setting = new CubismModelSettingJson(buffer,buffer.byteLength);
+      this.setting = new CubismModelSettingJson(buffer,buffer.byteLength);
     }
 
     /**
@@ -397,39 +419,48 @@ export class LayaModel extends Laya.Sprite{
         }
         return tmpMotion;
     }
-
+    
     /**
      * 加载完成 init模型
+     * @param isPremultipliedAlpha 是否预乘Alpha, default：true
      */
-    public initModel():void{
+    public initModel(isPremultipliedAlpha:boolean = true):void{
       // 全てのモーションを停止する
       this._motionManager.stopAllMotions();
       this._initialized = true;
       this.createRenderer();
 
-      this._texturePool = {};
-      let element:string,texture:Laya.Texture;
+      this._texturePool = [];
+      let element:any,texture:Laya.Texture2D,img:any;
       for (let index = 0; index < this._textureUrls.length; index++) {
         element = this._textureUrls[index];
-        texture = Laya.loader.getRes(element);
-        if (!texture||!(texture instanceof Laya.Texture)) {
+        img = Laya.loader.getRes(element.url);
+        texture = new Laya.Texture2D(img.width,img.height,Laya.TextureFormat.R8G8B8A8,true,false);
+        texture.wrapModeU = Laya.WarpMode.Clamp;
+        texture.wrapModeV = Laya.WarpMode.Clamp;
+        texture.loadImageSource(img,isPremultipliedAlpha);
+        texture._setCreateURL(img.src);
+        if (!texture) {
           console.warn("Texture load fail! url:"+element);
           return
         }
-        this.renderer.bindTexture(index,(texture.bitmap as any)._glTexture);
-        // debugger
+        this.renderer.bindTexture(index,(texture as any)._glTexture);
         this._texturePool[index] = texture;
       }
-      
+      this.renderer.setIsPremultipliedAlpha(isPremultipliedAlpha);
       Laya.timer.frameLoop(1,this,this.update);
     }
 
+    public render(ctx:Laya.Context,x:number,y:number){
+      console.log(x,y);
+    }
     /**
      * 动画更新
      */
     public update():void{
+      this.renderer.gl.start();
       // this.graphics.clear();
-      // this.graphics.drawRect(0,0,this.width,this.height,"red")
+      // this.graphics.drawRect(0,0,this.width,this.height,"red");
       Live2DTime.updateTime();
       let deltaTimeSeconds: number = Live2DTime.getDeltaTime();
       this._userTimeSeconds += deltaTimeSeconds;
@@ -513,55 +544,88 @@ export class LayaModel extends Laya.Sprite{
         this._pose.updateParameters(this._model, deltaTimeSeconds);
       }
 
-      let projection: CubismMatrix44 = new CubismMatrix44();
-      let { width, height } =  Laya.Browser.mainCanvas;
-      // projection.scale(5,5);
-      let scaleNum = 1;
-      projection.scale(scaleNum ,scaleNum * width / height);
-      // let canvasx = this.x * this.stage.clientScaleX 
-      // let s = 2/this._model.getCanvasWidth();
-      // let float :Float32Array = new Float32Array(max);
-      // projection.setMatrix(float)
-      // projection.scale(,2/this._model.getCanvasWidth());
-      // projection.scale(this._model.getCanvasWidth() /(width * Laya.stage.clientScaleX) , this._model.getCanvasWidth() / (Laya.stage.clientScaleY * height) );
-      // projection.translate(this.width, 1);
-      // projection.translate( 0, 1/height);
-
+      if((this as any)._tfChanged){
+        this.refreshScaleAndTranM();
+      }
+      this.mvpMatrix = this.scaleAndTran.clone();
+      this.mvpMatrix.multiplyByMatrix(this.projection);
       this._model.update();
-      projection.multiplyByMatrix(this._modelMatrix);
-
-      this.renderer.setMvpMatrix(projection);
+      // projection.multiplyByMatrix(this._modelMatrix);
+      this.renderer.setMvpMatrix(this.mvpMatrix);
       // 通过画布尺寸
       // this._renderer.setRenderState(this.s_viewport);
       this._renderer.doDrawModel();
+      this.renderer.gl.end();
     }
-
     /**
-     * @inheritdoc
+     * 重新生成缩放与位移矩阵
      */
-    // public set width(value:number){
-    //   super.width = value;
+    public refreshScaleAndTranM(){
+      this.scaleAndTran.scale(this.scaleX,this.scaleY);
+      let { width , height} = Laya.Browser.mainCanvas;
+      this._transPoint.setTo(this.x,this.y);
+      this.localToGlobal(this._transPoint,false);
+      let canvasx = (this._transPoint.x * this.stage.clientScaleX + this.scaleX * this.modelWidth / 2 /**像素位置 */) * 2 / width -1;
+      let canvasy = 1 - (this._transPoint.y * this.stage.clientScaleY + this.scaleY * this.modelHeight / 2 /**像素位置 */) * 2 / height;
+      this.scaleAndTran.translate(canvasx,canvasy);
+    }
+    
+    // /**
+    //  * @inheritdoc
+    //  */
+    // public set scaleX(value:number){
+    //   super.scaleX = value;
+    //   this.scaleAndTran.scaleX(value);
+    // }
+    // /**
+    //  * @inheritdoc
+    //  */
+    // public get scaleX(){
+    //   return super.scaleX;
+    // }
+    // /**
+    //  * @inheritdoc
+    //  */
+    // public set scaleY(value:number){
+    //   super.scaleY = value;
+    //   this.scaleAndTran.scaleY(value);
+    // }
+    // /**
+    //  * @inheritdoc
+    //  */
+    // public get scaleY(){
+    //   return super.scaleY;
+    // }
+    // /**
+    //  * @inheritdoc
+    //  */
+    // public set x(value:number){
+    //   super.x = value;
+    //   let canvasx = (this.x * this.stage.clientScaleX + this.scaleX * this.modelWidth / 2 /**像素位置 */) * 2 / Laya.Browser.mainCanvas.width -1;
+    //   this.scaleAndTran.transformX(canvasx);
     //   // this.s_viewport[2] = value * Laya.stage.clientScaleX;
     // }
     // /**
     //  * @inheritdoc
     //  */
-    // public get width(){
-    //   return super.width;
+    // public get x(){
+    //   return super.x;
     // }
 
     // /**
     //  * @inheritdoc
     //  */
-    // public set height(value){
-    //   super.height = value;
-    //   this.s_viewport[3] = value * Laya.stage.clientScaleY;
+    // public set y(value){
+    //   super.y = value;
+    //   let canvasy = 1 - (this.y * this.stage.clientScaleY + this.scaleY * this.modelHeight / 2 /**像素位置 */) * 2 / Laya.Browser.mainCanvas.height;
+    //   this.scaleAndTran.transformY(canvasy);
+    //   // this.s_viewport[3] = value * Laya.stage.clientScaleY;
     // }
     // /**
     //  * @inheritdoc
     //  */
-    // public get height(){
-    //   return super.height;
+    // public get y(){
+    //   return super.y;
     // }
    
     /**
@@ -760,6 +824,81 @@ export class LayaModel extends Laya.Sprite{
     }
 
     /**
+     * 当たり判定テスト
+     * 指定ＩＤの頂点リストから矩形を計算し、座標をが矩形範囲内か判定する。
+     *
+     * @param hitArenaName  当たり判定をテストする対象のID
+     * @param x             判定を行うX座標
+     * @param y             判定を行うY座標
+     */
+    public live2DHitTest(hitArenaName: string, x: number, y: number):boolean{
+      let count: number = this.setting.getHitAreasCount();
+      for (let i = 0; i < count; i++) {
+        if ( this.setting.getHitAreaName(i) == hitArenaName) {
+          const drawId: CubismIdHandle = this.setting.getHitAreaId(i);
+          return this.live2DIsHit(drawId, x, y);
+        }
+      }
+      return false;
+    }
+
+    /**
+     * 当たり判定の取得
+     * @param drawableId 検証したいDrawableのID
+     * @param pointX X位置
+     * @param pointY Y位置
+     * @return true ヒットしている
+     * @return false ヒットしていない
+     */
+    public live2DIsHit(
+      drawableId: CubismIdHandle,
+      pointX: number,
+      pointY: number
+    ): boolean {
+      pointX = pointX * 2 / Laya.Browser.mainCanvas.width - 1;
+      pointY = 1 - pointY * 2 / Laya.Browser.mainCanvas.height ;
+      const drawIndex: number = this._model.getDrawableIndex(drawableId);
+
+      if (drawIndex < 0) {
+        return false; // 存在しない場合はfalse
+      }
+
+      const count: number = this._model.getDrawableVertexCount(drawIndex);
+      const vertices: Float32Array = this._model.getDrawableVertices(drawIndex);
+
+      let left: number = vertices[0];
+      let right: number = vertices[0];
+      let top: number = vertices[1];
+      let bottom: number = vertices[1];
+
+      for (let j = 1; j < count; ++j) {
+        const x = vertices[Constant.vertexOffset + j * Constant.vertexStep];
+        const y = vertices[Constant.vertexOffset + j * Constant.vertexStep + 1];
+
+        if (x < left) {
+          left = x; // Min x
+        }
+
+        if (x > right) {
+          right = x; // Max x
+        }
+
+        if (y < top) {
+          top = y; // Min y
+        }
+
+        if (y > bottom) {
+          bottom = y; // Max y
+        }
+      }
+      // let matrix = new CubismMatrix44();
+      
+      const tx: number = this.scaleAndTran.invertTransformX(pointX);
+      const ty: number = this.scaleAndTran.invertTransformY(pointY);
+
+      return left <= tx && tx <= right && top <= ty && ty <= bottom;
+    }
+    /**
      * 清理
      */
     private release():void{
@@ -785,6 +924,12 @@ export class LayaModel extends Laya.Sprite{
       this._expressionUrls = null;
       this._modelMatrix = null;
 
+      for (let i = 0; i < this._texturePool.length; i++) {
+        let tex = this._texturePool[i];
+        tex.destroy();
+        Laya.Loader.clearRes(tex.url);
+      }
+      this._texturePool = null;
       CubismPose.delete(this._pose);
       CubismEyeBlink.delete(this._eyeBlink);
       CubismBreath.delete(this._breath);

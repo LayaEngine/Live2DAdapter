@@ -954,7 +954,7 @@ export namespace Live2DCubismFramework {
         );
         this.gl.enableVertexAttribArray(shaderSet.attributePositionLocation);
         this.gl.vertexAttribPointer(
-          shaderSet.attributePositionLocation,
+          shaderSet.attributePositionLocation,//index
           2,
           this.gl.FLOAT,
           false,
