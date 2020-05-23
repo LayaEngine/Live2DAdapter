@@ -57,7 +57,8 @@ class Main {
 		model.initModel();
 		Laya.stage.addChild(model);
 		model.scale(0.1,0.1);
-		loader.clear()
+		//清理loader数据
+		loader.clear();
 		model.on(Laya.Event.MOUSE_DOWN,this,this.onMouseDown);
 		model.on(Laya.Event.CHANGE,this,this.aboutEvent);
 		Laya.stage.on(Laya.Event.MOUSE_DOWN,this,this.stageOnMouseDown);
@@ -93,7 +94,11 @@ class Main {
 			console.log("点击到了Body");
 			// model.setRandomExpression();
 			model.startRandomMotion("TapBody",3);
-		};
+		}else
+		if (model.live2DHitTest("Head",Laya.MouseManager.instance.mouseX ,Laya.MouseManager.instance.mouseY) ){
+			console.log("点到Head了")
+			model.startRandomMotion("Idle",3);
+		}
 		
 	}
 
