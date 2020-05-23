@@ -11865,7 +11865,7 @@ window.Laya= (function (exports) {
         }
         _custom(sprite, context, x, y) {
             sprite.customRender(context, x, y);
-            this._next._fun.call(this._next, sprite, context, x - sprite.pivotX, y - sprite.pivotY);
+            this._next._fun.call(this._next, sprite, context, 0, 0);
         }
         _clip(sprite, context, x, y) {
             var next = this._next;

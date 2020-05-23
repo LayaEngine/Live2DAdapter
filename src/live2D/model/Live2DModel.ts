@@ -135,6 +135,9 @@ export class Live2DModel extends Laya.Sprite{
     public modelWidth:number;
     /**模型高 */
     public modelHeight:number;
+
+    public modelOriginX:number;
+    public modelOriginY:number;
     /**缩放与平移矩阵 */
     private scaleAndTran: CubismMatrix44
     /**mvp矩阵 */
@@ -202,6 +205,11 @@ export class Live2DModel extends Laya.Sprite{
       this.projection = new CubismMatrix44();
       this.modelWidth = this._model.getModel().canvasinfo.CanvasWidth;
       this.modelHeight =  this._model.getModel().canvasinfo.CanvasHeight;
+      // this.pivotX = 
+      this.modelOriginX = this._model.getModel().canvasinfo.CanvasOriginX;
+      // this.pivotY =
+       this.modelOriginY = this._model.getModel().canvasinfo.CanvasOriginY;
+      
       let { width , height } = Laya.Browser.mainCanvas;
       let scaleNum :number = this.modelWidth * 2 / width  ;
       this.projection.scale(scaleNum , scaleNum * width/height);
@@ -473,12 +481,14 @@ export class Live2DModel extends Laya.Sprite{
       }
       hasChange&&this.refreshScaleAndTranM();
       context.addRenderObject(Live2DSubmit.create(this));
+      (context as any)._curSubmit = Laya.SubmitBase.RENDERBASE;
     }
     /**
      * 动画更新
      * @param deltaTimeSeconds 更新时间
      */
     public update(deltaTimeSeconds:number):void{
+      // this.graphics.clear();
       this._userTimeSeconds += deltaTimeSeconds;
       this._dragManager.update(deltaTimeSeconds);
       this._dragX = this._dragManager.getX();
@@ -573,10 +583,10 @@ export class Live2DModel extends Laya.Sprite{
       let a = this._lastMat.a ,d = this._lastMat.d,x = this._lastMat.tx,y = this._lastMat.ty;
       this.scaleAndTran.scale(a,d);
       let { width , height} = Laya.Browser.mainCanvas;
-      let canvasx = (x * this.stage.clientScaleX + a * this.modelWidth / 2 /**像素位置 */) * 2 / width -1;
-      let canvasy = 1 - (y * this.stage.clientScaleY + d * this.modelHeight / 2 /**像素位置 */) * 2 / height;
+      let canvasx = (x * this.stage.clientScaleX + a * ( this.modelOriginX - this.pivotX)) * 2 / width -1;
+      let canvasy = 1 - (y * this.stage.clientScaleY + d * (this.modelOriginY - this.pivotY)) * 2 / height;
       this.scaleAndTran.translate(canvasx,canvasy);
-    }
+    } 
     
     // /**
     //  * @inheritdoc
@@ -901,11 +911,8 @@ export class Live2DModel extends Laya.Sprite{
           bottom = y; // Max y
         }
       }
-      // let matrix = new CubismMatrix44();
-      
-      const tx: number = this.scaleAndTran.invertTransformX(pointX);
-      const ty: number = this.scaleAndTran.invertTransformY(pointY);
-
+      let tx: number = this.projection.invertTransformX(this.scaleAndTran.invertTransformX(pointX));
+      let ty: number = this.projection.invertTransformY(this.scaleAndTran.invertTransformY(pointY));
       return left <= tx && tx <= right && top <= ty && ty <= bottom;
     }
     /**
@@ -967,7 +974,7 @@ export class Live2DModel extends Laya.Sprite{
      * 在播放过程中出现事件时进行处理。
      * 假定被继承覆盖。
      * 如果未覆盖，则输出日志。
-     * @param eventValue触发事件的字符串数据
+     * @param eventValue 触发事件的字符串数据
      */
     public motionEventFired(eventValue: csmString): void {
       this.event(Laya.Event.CHANGE,eventValue.s);
