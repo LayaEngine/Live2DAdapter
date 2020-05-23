@@ -43,7 +43,7 @@ class Main {
 		// sp.addChild(sp2);
 		// sp2.graphics.drawRect(0,0,1024,1024,"white");
 		let loader = new Live2DLoader();
-		loader.loadAssets("res/Hiyori","Hiyori.model3.json",Laya.Handler.create(this,this._loadSuccess));
+		loader.loadAssets("res/Rice","Rice.model3.json",Laya.Handler.create(this,this._loadSuccess));
 		//激活资源版本控制，version.json由IDE发布功能自动生成，如果没有也不影响后续流程
 		
 		// Laya.ResourceVersion.enable("version.json", Laya.Handler.create(this, this.onVersionLoaded), Laya.ResourceVersion.FILENAME_VERSION);
@@ -52,15 +52,17 @@ class Main {
 	private _loadSuccess(model:Live2DModel){
 		model.initModel();
 		let sp = new Laya.Sprite();
+		Laya.stage.addChild(sp)
 		Laya.stage.addChild(model);
 		// model.addChild(sp);
 		model.scale(0.1,0.1);
 		// Laya.loader.load(["res/atlas/comp.atlas","res/atlas/test.atlas"],Laya.Handler.create(this,()=>{
 		// 	Laya.stage.addChild(new GameUI());
 		// }));
-		//缩放下
-		sp.graphics.drawRect(0,0,model.width ,model.height,"red");
-		model.pos((model.width - model.pivotX)*model.scaleX,(model.height - model.pivotY)*model.scaleY);
+		// 缩放下
+		// sp.graphics.drawRect(0,0,model.width ,model.height,"red");
+		sp.graphics.drawRect(0,0,model.width * model.scaleX ,model.height * model.scaleY,"red");
+		// model.pos((model.width - model.pivotX)*model.scaleX,(model.height - model.pivotY)*model.scaleY);
 		model.on(Laya.Event.MOUSE_DOWN,this,this.onMouseDown,[model]);
 		model.on(Laya.Event.CHANGE,this,this.aboutEvent);
 		Laya.stage.on(Laya.Event.MOUSE_DOWN,this,this.stageOnMouseDown,[model])
@@ -77,7 +79,8 @@ class Main {
 		// console.log("trueture")
 		if(model.live2DHitTest("Body",Laya.MouseManager.instance.mouseX ,Laya.MouseManager.instance.mouseY)){
 			console.log("点击到了Body");
-			model.setRandomExpression();
+			// model.setRandomExpression();
+			model.startRandomMotion("TapBody",3);
 		};
 		
 	}

@@ -211,7 +211,12 @@ export class Live2DModel extends Laya.Sprite{
        this.modelOriginY = this._model.getModel().canvasinfo.CanvasOriginY;
       
       let { width , height } = Laya.Browser.mainCanvas;
-      let scaleNum :number = this.modelWidth * 2 / width  ;
+      let scaleNum :number 
+      if(this.modelHeight > this.modelWidth){
+        scaleNum= this.modelWidth * 2 / width;
+      }else{
+        scaleNum = this.modelHeight *2 / width;
+      }
       this.projection.scale(scaleNum , scaleNum * width/height);
       this.width = this.modelWidth / Laya.stage.clientScaleX;
       this.height = this.modelHeight / Laya.stage.clientScaleY;
@@ -664,6 +669,7 @@ export class Live2DModel extends Laya.Sprite{
 
       this._renderer = new CubismRenderer_WebGL();
       this._renderer.initialize(this._model);
+      this._renderer.owner = this;
     }
 
     /**

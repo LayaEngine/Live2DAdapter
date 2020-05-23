@@ -26,6 +26,7 @@ import CubismModel = cubismmodel.CubismModel;
 import CubismRenderer = cubismrenderer.CubismRenderer;
 import CubismBlendMode = cubismrenderer.CubismBlendMode;
 import CubismTextureColor = cubismrenderer.CubismTextureColor;
+import { Live2DModel } from '../model/Live2DModel';
 
 export namespace Live2DCubismFramework {
   const ColorChannelCount = 4; // 実験時に1チャンネルの場合は1、RGBだけの場合は3、アルファも含める場合は4
@@ -1906,6 +1907,7 @@ export namespace Live2DCubismFramework {
    * WebGL用の描画命令を実装したクラス
    */
   export class CubismRenderer_WebGL extends CubismRenderer {
+    public owner:Live2DModel;
     /**
      * レンダラの初期化処理を実行する
      * 引数に渡したモデルからレンダラの初期化処理に必要な情報を取り出すことができる
@@ -2003,6 +2005,7 @@ export namespace Live2DCubismFramework {
      * デストラクタ相当の処理
      */
     public release(): void {
+      this.owner = null;
       this._clippingManager.release();
       this._clippingManager = void 0;
       this._clippingManager = null;
