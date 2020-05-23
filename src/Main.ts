@@ -8,12 +8,18 @@ import GameUI from "./script/GameUI";
 
 
 class Main {
+	private _model:Live2DModel;
+	private _modelurls = [
+		"Haru","Hiyori","Mark","Natori","Rice"
+	];
+	private 
+	private index:number = 0;
 	constructor() {
 		Laya.init(GameConfig.width,GameConfig.height, Laya["WebGL"]);
 		Laya["Physics"] && Laya["Physics"].enable();
 		Laya["DebugPanel"] && Laya["DebugPanel"].enable();
 		Laya.stage.scaleMode = GameConfig.scaleMode;
-		Laya.stage.screenMode = GameConfig.screenMode;
+		Laya.stage.screenMode = Laya.Stage.SCREEN_HORIZONTAL;
 		Laya.stage.alignV = GameConfig.alignV;
 		Laya.stage.alignH = GameConfig.alignH;
 		//兼容微信不支持加载scene后缀场景
@@ -30,52 +36,58 @@ class Main {
 		CubismShader_WebGL.getInstance().generateShaders();
 		//初始化live2d计时
 		Delegate.instance.initializeCubism();
-		
-		// let sp = new Laya.Sprite();
-		// let sp2 = new Laya.Sprite();
-		// sp.size(2048,2048);
-		// sp.graphics.drawRect(0,0,2048,2048,"red");
-		// sp.pivotX = 1024;
-		// sp.pivotY = 1024;
-		// sp.scale(0.1,0.1);
-		// sp.pos(102.4,102.4);
-		// Laya.stage.addChild(sp);
-		// sp.addChild(sp2);
-		// sp2.graphics.drawRect(0,0,1024,1024,"white");
-		let loader = new Live2DLoader();
-		loader.loadAssets("res/Rice","Rice.model3.json",Laya.Handler.create(this,this._loadSuccess));
 		//激活资源版本控制，version.json由IDE发布功能自动生成，如果没有也不影响后续流程
-		
+		this.initRedBtn();
 		// Laya.ResourceVersion.enable("version.json", Laya.Handler.create(this, this.onVersionLoaded), Laya.ResourceVersion.FILENAME_VERSION);
 	}
+	private changeModel(){
+		// console.log("red down");
+		if (this._model) {
+			this._model.destroy();
+		}
+		this._model = null;
+		let loader = new Live2DLoader();
+		let url = this._modelurls[this.index % this._modelurls.length];
+		this.index ++;
+		loader.loadAssets("res/"+url,url+".model3.json",Laya.Handler.create(this,this._loadSuccess));
+	}
 
-	private _loadSuccess(model:Live2DModel){
+	private _loadSuccess(model:Live2DModel,loader:Live2DLoader){
+		this._model = model;
 		model.initModel();
+		Laya.stage.addChild(model);
+		model.scale(0.1,0.1);
+		loader.clear()
+		model.on(Laya.Event.MOUSE_DOWN,this,this.onMouseDown);
+		model.on(Laya.Event.CHANGE,this,this.aboutEvent);
+		Laya.stage.on(Laya.Event.MOUSE_DOWN,this,this.stageOnMouseDown);
+		
+	}
+
+	private initRedBtn(){
 		let sp = new Laya.Sprite();
 		Laya.stage.addChild(sp)
-		Laya.stage.addChild(model);
-		// model.addChild(sp);
-		model.scale(0.1,0.1);
-		// Laya.loader.load(["res/atlas/comp.atlas","res/atlas/test.atlas"],Laya.Handler.create(this,()=>{
-		// 	Laya.stage.addChild(new GameUI());
-		// }));
-		// 缩放下
-		// sp.graphics.drawRect(0,0,model.width ,model.height,"red");
-		sp.graphics.drawRect(0,0,model.width * model.scaleX ,model.height * model.scaleY,"red");
-		// model.pos((model.width - model.pivotX)*model.scaleX,(model.height - model.pivotY)*model.scaleY);
-		model.on(Laya.Event.MOUSE_DOWN,this,this.onMouseDown,[model]);
-		model.on(Laya.Event.CHANGE,this,this.aboutEvent);
-		Laya.stage.on(Laya.Event.MOUSE_DOWN,this,this.stageOnMouseDown,[model])
+		sp.graphics.drawRect(0,0,100 ,100,"red");
+		sp.mouseEnabled = true;
+		sp.mouseThrough =true
+		sp.x = Laya.stage.width - 100;
+		sp.on(Laya.Event.MOUSE_DOWN,this,this.changeModel)
 	}
+
+	
 	private aboutEvent(eventValue):void{
 		console.log(eventValue);
 	}
-	private stageOnMouseDown(model:Live2DModel):void{
-		Laya.stage.on(Laya.Event.MOUSE_MOVE,this,this.onMouseMove,[model])
-		Laya.stage.on(Laya.Event.MOUSE_OUT,this,this.onMouseUp,[model])
-		Laya.stage.on(Laya.Event.MOUSE_UP,this,this.onMouseUp,[model])
+	private stageOnMouseDown():void{
+		Laya.stage.on(Laya.Event.MOUSE_MOVE,this,this.onMouseMove)
+		Laya.stage.on(Laya.Event.MOUSE_OUT,this,this.onMouseUp)
+		Laya.stage.on(Laya.Event.MOUSE_UP,this,this.onMouseUp)
 	}
-	private onMouseDown(model:Live2DModel):void{
+	private onMouseDown():void{
+		if (!this._model) {
+			return
+		}
+		let model = this._model;
 		// console.log("trueture")
 		if(model.live2DHitTest("Body",Laya.MouseManager.instance.mouseX ,Laya.MouseManager.instance.mouseY)){
 			console.log("点击到了Body");
@@ -85,14 +97,17 @@ class Main {
 		
 	}
 
-	private onMouseUp(model:Live2DModel){
+	private onMouseUp(){
 		Laya.stage.off(Laya.Event.MOUSE_MOVE,this,this.onMouseMove)
 		Laya.stage.off(Laya.Event.MOUSE_OUT,this,this.onMouseUp)
 		Laya.stage.off(Laya.Event.MOUSE_UP,this,this.onMouseUp)
 	}
 
-	private onMouseMove(model:Live2DModel){
-		model.setDragging(Laya.MouseManager.instance.mouseX,Laya.MouseManager.instance.mouseY)
+	private onMouseMove(){
+		if (!this._model) {
+			return
+		}
+		this._model.setDragging(Laya.MouseManager.instance.mouseX,Laya.MouseManager.instance.mouseY)
 	}
 	
 }

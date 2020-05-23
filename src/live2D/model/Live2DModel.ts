@@ -127,16 +127,15 @@ export class Live2DModel extends Laya.Sprite{
     private _lipsync: boolean;
     // 渲染器
     private _renderer: CubismRenderer_WebGL; 
-    /**默认从0-width 0-height 视口数组 */
-    // private s_viewport:number[] = [0,0,0,0]
     /**还原矩阵*/
     private projection:CubismMatrix44;
     /**模型宽 */
     public modelWidth:number;
     /**模型高 */
     public modelHeight:number;
-
+    /**模型x中心点 */
     public modelOriginX:number;
+    /**模型y中心点 */
     public modelOriginY:number;
     /**缩放与平移矩阵 */
     private scaleAndTran: CubismMatrix44
@@ -144,9 +143,12 @@ export class Live2DModel extends Laya.Sprite{
     private mvpMatrix:CubismMatrix44;
     /**记录矩阵 */
     private _lastMat:Laya.Matrix;
-
+    /**默认的动画播放group 默认是获取到的第一个 */
+    private _defaultGroup:string;
+    
     constructor(){
       super();
+
       this.mouseThrough = false;
       this.mouseEnabled = true;
       this._userTimeSeconds = 0;
@@ -205,10 +207,8 @@ export class Live2DModel extends Laya.Sprite{
       this.projection = new CubismMatrix44();
       this.modelWidth = this._model.getModel().canvasinfo.CanvasWidth;
       this.modelHeight =  this._model.getModel().canvasinfo.CanvasHeight;
-      // this.pivotX = 
       this.modelOriginX = this._model.getModel().canvasinfo.CanvasOriginX;
-      // this.pivotY =
-       this.modelOriginY = this._model.getModel().canvasinfo.CanvasOriginY;
+      this.modelOriginY = this._model.getModel().canvasinfo.CanvasOriginY;
       
       let { width , height } = Laya.Browser.mainCanvas;
       let scaleNum :number 
@@ -361,30 +361,10 @@ export class Live2DModel extends Laya.Sprite{
           this._motionGroups.push(group);
           this._allMotionCount += this.setting.getMotionCount(group);
         }
+        this._defaultGroup = this._motionGroups[0];
       }
     }
 
-    /**
-     * 准备motion路径Urls
-     */
-    public preMotionUrls():void{
-      this._motionUrls = [];
-      let group:string,count:number,motionFileName:string;
-      for (let i = 0; i < this._motionGroups.length; i++) {
-          group = this._motionGroups[i];
-          count = this.setting.getMotionCount(group)
-          for (let j = 0; j < count; j++) {
-            motionFileName = this.setting.getMotionFileName(group, j);
-            this._motionUrls.push({
-              url:`${this._modelHomeDir}/${motionFileName}`,
-              key:group,
-              index:j,
-              name:motionFileName,
-              type:Laya.Loader.BUFFER
-            });
-          }
-      }
-    }
     /**
      * 从组名中批量加载运动数据。
      * 运动数据的名称是从ModelSetting内部获取的。
@@ -459,10 +439,10 @@ export class Live2DModel extends Laya.Sprite{
           return
         }
         this.renderer.bindTexture(index,(texture as any)._glTexture);
+        texture.lock = true;
         this._texturePool[index] = texture;
       }
       this.renderer.setIsPremultipliedAlpha(isPremultipliedAlpha);
-      // Laya.timer.frameLoop(1,this,this.update);
     }
     
     public customRender(context:Laya.Context,x:number,y:number){
@@ -506,7 +486,7 @@ export class Live2DModel extends Laya.Sprite{
       if (this._motionManager.isFinished()) {
         // 如果没有动作播放，则从待机动作中随机播放
         this.startRandomMotion(
-          this._motionGroups[0],
+          this._defaultGroup,
           3
         );
       } else {
@@ -593,64 +573,18 @@ export class Live2DModel extends Laya.Sprite{
       this.scaleAndTran.translate(canvasx,canvasy);
     } 
     
-    // /**
-    //  * @inheritdoc
-    //  */
-    // public set scaleX(value:number){
-    //   super.scaleX = value;
-    //   this.scaleAndTran.scaleX(value);
-    // }
-    // /**
-    //  * @inheritdoc
-    //  */
-    // public get scaleX(){
-    //   return super.scaleX;
-    // }
-    // /**
-    //  * @inheritdoc
-    //  */
-    // public set scaleY(value:number){
-    //   super.scaleY = value;
-    //   this.scaleAndTran.scaleY(value);
-    // }
-    // /**
-    //  * @inheritdoc
-    //  */
-    // public get scaleY(){
-    //   return super.scaleY;
-    // }
-    // /**
-    //  * @inheritdoc
-    //  */
-    // public set x(value:number){
-    //   super.x = value;
-    //   let canvasx = (this.x * this.stage.clientScaleX + this.scaleX * this.modelWidth / 2 /**像素位置 */) * 2 / Laya.Browser.mainCanvas.width -1;
-    //   this.scaleAndTran.transformX(canvasx);
-    //   // this.s_viewport[2] = value * Laya.stage.clientScaleX;
-    // }
-    // /**
-    //  * @inheritdoc
-    //  */
-    // public get x(){
-    //   return super.x;
-    // }
+    public set defaultGroup(group:string) {
+      if (group != this._defaultGroup) {
+        if (this._defaultGroup.indexOf(group) == -1) {
+          console.log("Can not find Motion Group:",group);
+          this._defaultGroup = group;
+        }
+      }
+    }
 
-    // /**
-    //  * @inheritdoc
-    //  */
-    // public set y(value){
-    //   super.y = value;
-    //   let canvasy = 1 - (this.y * this.stage.clientScaleY + this.scaleY * this.modelHeight / 2 /**像素位置 */) * 2 / Laya.Browser.mainCanvas.height;
-    //   this.scaleAndTran.transformY(canvasy);
-    //   // this.s_viewport[3] = value * Laya.stage.clientScaleY;
-    // }
-    // /**
-    //  * @inheritdoc
-    //  */
-    // public get y(){
-    //   return super.y;
-    // }
-   
+    public get defaultGroup():string{
+      return this._defaultGroup;
+    }
     /**
      * 渲染器获取，不推荐获取去使用结果不可控
      * @return CubismRenderer_WebGL
@@ -962,8 +896,11 @@ export class Live2DModel extends Laya.Sprite{
       CubismPhysics.delete(this._physics);
       CubismModelUserData.delete(this._modelUserData);
     }
-    
-    public destroy(destroyChildren:boolean):void{
+    /**
+     * @inheritdoc
+     * @param destroyTexture 是否销毁
+     */
+    public destroy(destroyTexture:boolean = true,destroyChildren?:boolean):void{
       if(this.destroyed)
         return;
       super.destroy(destroyChildren);

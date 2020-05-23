@@ -1,4 +1,6 @@
 import { Live2DModel } from "../model/Live2DModel";
+import { Live2DCubismFramework as cubismmodelsettingjson } from '../../framework/cubismmodelsettingjson';
+import CubismModelSettingJson = cubismmodelsettingjson.CubismModelSettingJson;
 
 
 export enum LoadStep {
@@ -32,9 +34,13 @@ export default class Live2DLoader extends Laya.EventDispatcher{
     private _completeHandler:Laya.Handler;
     private _model:Live2DModel;
     public state:LoadStep;
+    private _setting:CubismModelSettingJson;
+    /**读取的所有的Json数据 */
+    public jsonUrls:Array<string>;
 
     constructor(){
         super();
+        this.jsonUrls=[];
     }
     
     /**
@@ -46,11 +52,14 @@ export default class Live2DLoader extends Laya.EventDispatcher{
         this._model =  new Live2DModel();
         this._model._modelHomeDir = this._modelHomeDir = dir;
         this._completeHandler = complete;
-        Laya.loader.load(`${dir}/${fileName}`,Laya.Handler.create(this,this._loadAssetsComplete),null,Laya.Loader.BUFFER);
+        let url = `${dir}/${fileName}`;
+        this.jsonUrls.push(url);
+        Laya.loader.load(url,Laya.Handler.create(this,this._loadAssetsComplete),null,Laya.Loader.BUFFER);
     }
 
     private _loadAssetsComplete(buffer:ArrayBuffer){
         this._model.createSetting(buffer);
+        this._setting = this._model.setting;
         this.state = LoadStep.LoadModel;
         this.setupModel();
     }
@@ -60,11 +69,12 @@ export default class Live2DLoader extends Laya.EventDispatcher{
      * 根据model3.json的描述生成模型，运动和物理等组件。
      */
     private setupModel(){
-        let modelFileName = this._model.setting.getModelFileName();
+        let modelFileName = this._setting.getModelFileName();
         if (modelFileName!='') {
             this.state = LoadStep.WaitLoadModel;
-            // this._model._urls.push(`${this._modelHomeDir}/${modelFileName}`);
-            Laya.loader.load(`${this._modelHomeDir}/${modelFileName}`,Laya.Handler.create(this,this._setupModelComplete),null,Laya.Loader.BUFFER);
+            let url = `${this._modelHomeDir}/${modelFileName}`;
+            this.jsonUrls.push(url);
+            Laya.loader.load(url,Laya.Handler.create(this,this._setupModelComplete),null,Laya.Loader.BUFFER);
         }else{
             console.warn('Model data does not exist.');
         }
@@ -77,20 +87,23 @@ export default class Live2DLoader extends Laya.EventDispatcher{
     }
 
     private loadCubismExpression():void{
-        let expressionCount:number = this._model.setting.getExpressionCount();
+        let expressionCount:number = this._setting.getExpressionCount();
         if (expressionCount>0) {
             this._model._expressionUrls = [];
             this._model._expressionNames = [];
+            let url:string;
             for (let i = 0; i < expressionCount; i++) {
                 this._model._expressionNames.push(
-                    this._model.setting.getExpressionName(i)
+                    this._setting.getExpressionName(i)
                 );
+                url = `${this._modelHomeDir}/${this._setting.getExpressionFileName(i)}`;
+                this.jsonUrls.push(url);
                 this._model._expressionUrls.push(
-                    `${this._modelHomeDir}/${this._model.setting.getExpressionFileName(i)}`
+                    url
                 );
             }
             this.state = LoadStep.WaitLoadExpression;
-            Laya.loader.load(this._model._expressionUrls.slice(),Laya.Handler.create(this,this._loadCubismExpressionComplete,[expressionCount]),null,Laya.Loader.BUFFER);
+            Laya.loader.load(this._model._expressionUrls,Laya.Handler.create(this,this._loadCubismExpressionComplete,[expressionCount]),null,Laya.Loader.BUFFER);
         } else {
             this.state = LoadStep.LoadPhysics;
             this.loadCubismPhysics();
@@ -102,6 +115,7 @@ export default class Live2DLoader extends Laya.EventDispatcher{
             let buffer:ArrayBuffer = Laya.loader.getRes(this._model._expressionUrls[i]);
             this._model.loadExpression(buffer,buffer.byteLength,this._model._expressionNames[i]);
         }
+        this._model._expressionUrls = null;
         this.state = LoadStep.LoadPhysics;
         this.loadCubismPhysics();
     }
@@ -110,10 +124,12 @@ export default class Live2DLoader extends Laya.EventDispatcher{
      * 加载物理
      */
     private loadCubismPhysics():void {
-        let physicsFileName:string =this._model.setting.getPhysicsFileName();
+        let physicsFileName:string =this._setting.getPhysicsFileName();
         if (physicsFileName != '') {
             this.state = LoadStep.WaitLoadPhysics;
-            Laya.loader.load(`${this._modelHomeDir}/${physicsFileName}`,Laya.Handler.create(this,this._loadCubismPhysicsComplete),null,Laya.Loader.BUFFER);
+            let url = `${this._modelHomeDir}/${physicsFileName}`;
+            this.jsonUrls.push(url);
+            Laya.loader.load(url,Laya.Handler.create(this,this._loadCubismPhysicsComplete),null,Laya.Loader.BUFFER);
         } else {
             this.state = LoadStep.LoadPose;
             this.loadCubismPose();
@@ -129,10 +145,12 @@ export default class Live2DLoader extends Laya.EventDispatcher{
      * Pose
      */
     private loadCubismPose():void{
-        let poseFileName = this._model.setting.getPoseFileName();
+        let poseFileName = this._setting.getPoseFileName();
         if (poseFileName != '') {
             this.state = LoadStep.WaitLoadPose;
-            Laya.loader.load(`${this._modelHomeDir}/${poseFileName}`,Laya.Handler.create(this,this._loadCubismPoseComplete),null,Laya.Loader.BUFFER);
+            let url = `${this._modelHomeDir}/${poseFileName}`;
+            this.jsonUrls.push(url);
+            Laya.loader.load(url,Laya.Handler.create(this,this._loadCubismPoseComplete),null,Laya.Loader.BUFFER);
           } else {
             this.state = LoadStep.SetupEyeBlink;
             this.detailsinit();
@@ -150,10 +168,12 @@ export default class Live2DLoader extends Laya.EventDispatcher{
         this.state = LoadStep.SetupBreath;
         this._model.setupBreath();
         this.state = LoadStep.LoadUserData;
-        let userDataFile = this._model.setting.getUserDataFile();
+        let userDataFile = this._setting.getUserDataFile();
         if (userDataFile != '') {
             this.state = LoadStep.WaitLoadUserData;
-            Laya.loader.load(`${this._modelHomeDir}/${userDataFile}`,Laya.Handler.create(this,this._loadUserDataComplete),null,Laya.Loader.BUFFER);
+            let url = `${this._modelHomeDir}/${userDataFile}`;
+            this.jsonUrls.push(url);
+            Laya.loader.load(url,Laya.Handler.create(this,this._loadUserDataComplete),null,Laya.Loader.BUFFER);
           } else {
             this.state = LoadStep.SetupEyeBlinkIds;
             this.detailsinit2();
@@ -178,17 +198,42 @@ export default class Live2DLoader extends Laya.EventDispatcher{
         this.state = LoadStep.WaitLoadMotion;
         this._model.loadCubismMotion();
         if (this._model.allMotionCount) {
-            this._model.preMotionUrls();
+            this.preMotionUrls();
             this.state = LoadStep.LoadMotion;
-            Laya.loader.load(this._model._motionUrls.slice(),Laya.Handler.create(this,this._preLoadMotionGroupComplete));
+            Laya.loader.load(this._model._motionUrls,Laya.Handler.create(this,this._preLoadMotionGroupComplete));
         }else{
             this.state = LoadStep.LoadTexture;
             this.loadTexture();
         }
     }
 
+    /**
+     * 准备motion路径Urls
+     */
+    public preMotionUrls():void{
+        this._model._motionUrls = [];
+        let motionGroups = this._model._motionGroups;
+        let group:string,count:number,motionFileName:string;
+        for (let i = 0; i < motionGroups.length; i++) {
+            group = motionGroups[i];
+            count = this._setting.getMotionCount(group)
+            for (let j = 0; j < count; j++) {
+               motionFileName = `${this._modelHomeDir}/${this._setting.getMotionFileName(group, j)}`;
+              this.jsonUrls.push(motionFileName);
+              this._model._motionUrls.push({
+                url:motionFileName,
+                key:group,
+                index:j,
+                name:`${group}_${j}`,
+                type:Laya.Loader.BUFFER
+              });
+            }
+        }
+      }
+
     private _preLoadMotionGroupComplete():void{
-        this._model.loadMotionGroup()
+        this._model.loadMotionGroup();
+        this._model._motionUrls = null;
         this.state = LoadStep.LoadTexture;
         this.loadTexture();
     }
@@ -198,11 +243,11 @@ export default class Live2DLoader extends Laya.EventDispatcher{
         if (this.state !== LoadStep.LoadTexture) {
             return;
         }
-        let textureCount: number = this._model.setting.getTextureCount();
+        let textureCount: number = this._setting.getTextureCount();
         this._model._textureUrls=[];
         let texturePath;
         for(let i = 0;i<textureCount;i++){
-            texturePath = `${this._modelHomeDir}/${this._model.setting.getTextureFileName(i)}`;
+            texturePath = `${this._modelHomeDir}/${this._setting.getTextureFileName(i)}`;
             this._model._textureUrls.push({url:texturePath,type:"nativeimage"});
         }
         Laya.loader.load(this._model._textureUrls.slice(),Laya.Handler.create(this,this.loadComplete))
@@ -212,14 +257,25 @@ export default class Live2DLoader extends Laya.EventDispatcher{
      */
     private loadComplete():void{
         this.state = LoadStep.CompleteSetup;
-        this._completeHandler && this._completeHandler.runWith([this._model]);
+        this._completeHandler && this._completeHandler.runWith([this._model,this]);
     }
+    
     /**
      * 清理数据
+     * @param clearJson 是否清理所有加载的json
+     * @default true
      */
-    public clear():void{
+    public clear(clearJson:boolean = true):void{
         this._modelHomeDir = null
+        this._setting =null;
         this._model = null;
+        if (clearJson) {
+            for (let index = 0; index < this.jsonUrls.length; index++) {
+                let url = this.jsonUrls[index];
+                Laya.loader.clearRes(url);
+            }
+        }
+        this.jsonUrls.length = 0;;
         this.state = LoadStep.LoadAssets;
     }
 }
