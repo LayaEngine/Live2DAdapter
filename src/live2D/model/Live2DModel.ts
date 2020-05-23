@@ -615,6 +615,7 @@ export class Live2DModel extends Laya.Sprite{
         this._renderer = null;
       }
     }
+
     /**
      * live2d model获取
      * @return CubismModel
@@ -638,6 +639,15 @@ export class Live2DModel extends Laya.Sprite{
     public get expressionManager():CubismMotionManager{
       return this._expressionManager;
     }
+
+    /**
+     * @readonly
+     * 获取Live2D物理
+     */
+    public get physics():CubismPhysics{
+      return this._physics;
+    }
+
     /**
      * @readonly
      * 拖动管理
@@ -696,15 +706,12 @@ export class Live2DModel extends Laya.Sprite{
         console.warn("[APP]can't start motion.");
         return -1;
       }
-
-      let motionFileName = this.setting.getMotionFileName(group, no);
-
       // ex) idle_0
-      let name = `${group}_${no}`;
-      let motion: CubismMotion = this._motions.getValue(name) as CubismMotion;
+      let motion: CubismMotion = this.getMotion(group,no) as CubismMotion;
       let autoDelete = false;
-
+      
       if (motion == null) {
+        let motionFileName = this.setting.getMotionFileName(group, no);
           motion = this.createMotion(null,`${this._modelHomeDir}/${motionFileName}`,group,no);
           if (!motion) {
             console.warn("[APP]can't start motion.");
@@ -722,6 +729,15 @@ export class Live2DModel extends Laya.Sprite{
         autoDelete,
         priority
       );
+    }
+    
+    /**
+     * 通过动作名字获取当前动作池中的原生对象
+     * @param group 动作分组
+     * @param index 动作索引
+     */
+    public getMotion(group:string,index:number):ACubismMotion{
+      return this._motions.getValue(`${group}_${index}`);
     }
 
     /**
@@ -748,11 +764,19 @@ export class Live2DModel extends Laya.Sprite{
     }
 
     /**
+     * 通过动作名字获取当前动作池中的原生对象
+     * @param expressionId 表情动作ID
+     */
+    public getExpression(expressionId:string):ACubismMotion{
+      return this._expressions.getValue(expressionId);
+    }
+
+    /**
      * 设置参数指定的面部表情运动
      * @param expressionId 表情动作ID
      */
     public setExpression(expressionId: string): void {
-      const motion: ACubismMotion = this._expressions.getValue(expressionId);
+      const motion: ACubismMotion = this.getExpression(expressionId);
       if (motion != null) {
         this._expressionManager.startMotionPriority(
           motion,

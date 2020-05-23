@@ -3,7 +3,11 @@ import { Delegate } from "./live2D/core/Delegate";
 import Live2DLoader from "./live2D/net/Live2DLoader";
 import { Live2DModel } from "./live2D/model/Live2DModel";
 import { Live2DCubismFramework as Live2Drenderer } from "./live2D/render/Live2Drenderer";
+import { Live2DCubismFramework as cubismphysics } from "./framework/physics/cubismphysics";
+import { Live2DCubismFramework as cubismvector2 } from './framework/math/cubismvector2';
+import CubismVector2 = cubismvector2.CubismVector2;
 import CubismShader_WebGL = Live2Drenderer.CubismShader_WebGL;
+import Options = cubismphysics.Options;
 import GameUI from "./script/GameUI";
 
 
@@ -57,6 +61,12 @@ class Main {
 		model.initModel();
 		Laya.stage.addChild(model);
 		model.scale(0.1,0.1);
+		if(model.physics){
+			debugger
+			let op =new Options();
+			op.wind = new CubismVector2(0.1,0.1);
+			model.physics.setOptions(op)
+		}
 		//清理loader数据
 		loader.clear();
 		model.on(Laya.Event.MOUSE_DOWN,this,this.onMouseDown);
