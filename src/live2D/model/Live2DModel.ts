@@ -473,7 +473,6 @@ export class Live2DModel extends Laya.Sprite{
      * @param deltaTimeSeconds 更新时间
      */
     public update(deltaTimeSeconds:number):void{
-      // this.graphics.clear();
       this._userTimeSeconds += deltaTimeSeconds;
       this._dragManager.update(deltaTimeSeconds);
       this._dragX = this._dragManager.getX();

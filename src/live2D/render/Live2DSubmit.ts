@@ -29,7 +29,9 @@ export class Live2DSubmit implements laya.webgl.submit.ISubmit{
         this.saveParameter = null;
         Laya.Pool.recover("Live2DSubmit_Pool",this);
     }
-
+    /**
+     * 保存会被修改的状态
+     */
     start():void{
         let gl:WebGLRenderingContext = (Laya.WebGLContext as any).mainContext
         // debugger
@@ -65,7 +67,6 @@ export class Live2DSubmit implements laya.webgl.submit.ISubmit{
             if(enable){
                 data = vertexs[index] = {};
                 data.index = index;
-                // （index，size，type，normalized，stride，offset）
                 data.buffer = gl.getVertexAttrib(index,gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING);
                 data.size = gl.getVertexAttrib(index,gl.VERTEX_ATTRIB_ARRAY_SIZE);
                 data.type = gl.getVertexAttrib(index,gl.VERTEX_ATTRIB_ARRAY_TYPE);
@@ -79,7 +80,9 @@ export class Live2DSubmit implements laya.webgl.submit.ISubmit{
             }
         }
     }
-
+    /**
+     * 还原状态
+     */
     end():void{
         let gl:WebGLRenderingContext = (Laya.WebGLContext as any).mainContext
         if(this.saveParameter.BLEND){

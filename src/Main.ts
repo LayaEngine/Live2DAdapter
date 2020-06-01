@@ -16,7 +16,6 @@ class Main {
 	private _modelurls = [
 		"Haru","Hiyori","Mark","Natori","Rice"
 	];
-	private 
 	private index:number = 0;
 	constructor() {
 		Laya.init(GameConfig.width,GameConfig.height, Laya["WebGL"]);
@@ -40,12 +39,9 @@ class Main {
 		CubismShader_WebGL.getInstance().generateShaders();
 		//初始化live2d计时
 		Delegate.instance.initializeCubism();
-		//激活资源版本控制，version.json由IDE发布功能自动生成，如果没有也不影响后续流程
 		this.initRedBtn();
-		// Laya.ResourceVersion.enable("version.json", Laya.Handler.create(this, this.onVersionLoaded), Laya.ResourceVersion.FILENAME_VERSION);
 	}
 	private changeModel(){
-		// console.log("red down");
 		if (this._model) {
 			this._model.destroy();
 		}
@@ -99,7 +95,6 @@ class Main {
 			return
 		}
 		let model = this._model;
-		// console.log("trueture")
 		if(model.live2DHitTest("Body",Laya.MouseManager.instance.mouseX ,Laya.MouseManager.instance.mouseY)){
 			console.log("点击到了Body");
 			// model.setRandomExpression();

@@ -8,7 +8,8 @@
  /**
   * 修改记录：
   * 1.删除了输出类的引用
-  * 2.gl改为了封装的LayaGL
+  * (2.gl改为了封装的LayaGL)已经废除方案
+  * 2.简单实现了save，restore疯子在submit中
   */
 import { Live2DCubismFramework as cubismframework } from '../../framework/live2dcubismframework';
 import { Live2DCubismFramework as csmrect } from '../../framework/type/csmrectf';
