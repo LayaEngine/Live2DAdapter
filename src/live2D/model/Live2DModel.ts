@@ -210,7 +210,8 @@ export class Live2DModel extends Laya.Sprite{
       this.modelOriginX = this._model.getModel().canvasinfo.CanvasOriginX;
       this.modelOriginY = this._model.getModel().canvasinfo.CanvasOriginY;
       
-      let { width , height } = Laya.Browser.mainCanvas;
+      let width = Laya.Browser.mainCanvas.width;
+      let height = Laya.Browser.mainCanvas.height;
       let scaleNum :number 
       if(this.modelHeight > this.modelWidth){
         scaleNum= this.modelWidth * 2 / width;
@@ -566,7 +567,8 @@ export class Live2DModel extends Laya.Sprite{
     public refreshScaleAndTranM(){
       let a = this._lastMat.a ,d = this._lastMat.d,x = this._lastMat.tx,y = this._lastMat.ty;
       this.scaleAndTran.scale(a,d);
-      let { width , height} = Laya.Browser.mainCanvas;
+      let width = Laya.Browser.mainCanvas.width;
+      let height = Laya.Browser.mainCanvas.height;
       let canvasx = (x * this.stage.clientScaleX + a * ( this.modelOriginX - this.pivotX)) * 2 / width -1;
       let canvasy = 1 - (y * this.stage.clientScaleY + d * (this.modelOriginY - this.pivotY)) * 2 / height;
       this.scaleAndTran.translate(canvasx,canvasy);
