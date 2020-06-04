@@ -18,6 +18,7 @@ class Main {
 	];
 	private index:number = 0;
 	constructor() {
+		Config.useRetinalCanvas=true;
 		Laya.init(GameConfig.width,GameConfig.height, Laya["WebGL"]);
 		Laya["Physics"] && Laya["Physics"].enable();
 		Laya["DebugPanel"] && Laya["DebugPanel"].enable();
@@ -32,7 +33,7 @@ class Main {
 		if (GameConfig.physicsDebug && Laya["PhysicsDebugDraw"]) Laya["PhysicsDebugDraw"].enable();
 		if (GameConfig.stat) Laya.Stat.show();
 		Laya.alertGlobalError(true);
-		Laya.Browser.onMiniGame&&(Laya.URL.basePath = "https://10.10.82.100:9001/")
+		Laya.Browser.onMiniGame&&(Laya.URL.basePath = "http://10.10.20.48:8900/bin/");
 		//初始化渲染gl相关
 		CubismShader_WebGL.__init__();
 		//编译live2dshader
@@ -96,8 +97,9 @@ class Main {
 		}
 		let model = this._model;
 		if(model.live2DHitTest("Body",Laya.MouseManager.instance.mouseX ,Laya.MouseManager.instance.mouseY)){
-			console.log("点击到了Body");
+			// console.log("点击到了Body");
 			// model.setRandomExpression();
+			// model.startMotionByName("Idle","haru_g_idle",3);
 			model.startRandomMotion("TapBody",3);
 		}else
 		if (model.live2DHitTest("Head",Laya.MouseManager.instance.mouseX ,Laya.MouseManager.instance.mouseY) ){

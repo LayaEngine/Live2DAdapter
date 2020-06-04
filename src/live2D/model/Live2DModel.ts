@@ -145,10 +145,12 @@ export class Live2DModel extends Laya.Sprite{
     private _lastMat:Laya.Matrix;
     /**默认的动画播放group 默认是获取到的第一个 */
     private _defaultGroup:string;
-    
+    /** 文件名映射列表 */
+    private _fileMap:object;
+
     constructor(){
       super();
-
+      this._fileMap = {};
       this.mouseThrough = false;
       this.mouseEnabled = true;
       this._userTimeSeconds = 0;
@@ -377,6 +379,8 @@ export class Live2DModel extends Laya.Sprite{
         this.createMotion(element.name,element.url,element.key,element.index);
       }
     }
+
+    
     /**
      * 创建一个动作
      * @param name 名称，name为null是不会记录缓存
@@ -390,6 +394,9 @@ export class Live2DModel extends Laya.Sprite{
           console.warn(`createMotion fail! filename: ${url}, name:${name},group:${group},index:${index}`);
           return;
         }
+        let strs = url.split("/");
+        let filename = strs[strs.length-1].split(".")[0];
+        this._fileMap[group+ "_"+ filename] = index;
         let tmpMotion:CubismMotion = this.loadMotion(buffer,buffer.byteLength);
 
         let fadeTime = this.setting.getMotionFadeInTimeValue(group, index);
@@ -731,9 +738,49 @@ export class Live2DModel extends Laya.Sprite{
         priority
       );
     }
+
+    /**
+     * 通过分组+文件名来播放动作
+     * @param group モーショングループ名
+     * @param filename 文件名
+     * @param priority 優先度
+     * @param onFinishedMotionHandler モーション再生終了時に呼び出されるコールバック関数
+     * @return 開始したモーションの識別番号を返す。個別のモーションが終了したか否かを判定するisFinished()の引数で使用する。開始できない時は[-1]
+     */
+    public startMotionByName(
+      group: string,
+      filename: string,
+      priority: number,
+      onFinishedMotionHandler?: FinishedMotionCallback
+    ): any {
+      if (priority == 3) {
+        this._motionManager.setReservePriority(priority);
+      } else if (!this._motionManager.reserveMotion(priority)) {
+        console.warn("[APP]can't start motion.");
+        return -1;
+      }
+      let motion: CubismMotion = this.getMotionByFileName(group,filename) as CubismMotion;
+      
+      if (motion == null) {
+          console.warn("[APP]can't start motion.");
+          return -1;
+      } else {
+        motion.setFinishedMotionHandler(onFinishedMotionHandler);
+      }
+      
+      if (Live2DConfig.debugMode) {
+        console.log(`[APP]start motion: [${group}_${filename}`);
+      }
+
+      return this._motionManager.startMotionPriority(
+        motion,
+        false,
+        priority
+      );
+    }
     
     /**
-     * 通过动作名字获取当前动作池中的原生对象
+     * 通过分组与编号获取当前动作池中的原生对象
      * @param group 动作分组
      * @param index 动作索引
      */
@@ -741,6 +788,14 @@ export class Live2DModel extends Laya.Sprite{
       return this._motions.getValue(`${group}_${index}`);
     }
 
+    /**
+     * 通过动作文件名获取当前对象池中的原生对象
+     * @param group 
+     * @param filename 
+     */
+    public getMotionByFileName(group:string,filename:string):ACubismMotion{
+      return this._motions.getValue(`${group}_${this._fileMap[group+"_"+filename]}`);
+    }
     /**
      * 开始播放随机选择的动作。
      * @param group 运动组名称

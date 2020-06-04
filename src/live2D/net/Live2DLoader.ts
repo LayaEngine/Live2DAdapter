@@ -37,6 +37,7 @@ export default class Live2DLoader extends Laya.EventDispatcher{
     private _setting:CubismModelSettingJson;
     /**读取的所有的Json数据 */
     public jsonUrls:Array<string>;
+    
     constructor(){
         super();
         this.jsonUrls=[];
