@@ -53,12 +53,12 @@ class Main {
 	}
 
 	private _loadSuccess(model:Live2DModel,loader:Live2DLoader){
+		if(!model)return;
 		this._model = model;
 		model.initModel();
 		Laya.stage.addChild(model);
 		model.scale(0.1,0.1);
 		if(model.physics){
-			debugger
 			let op =new Options();
 			op.wind = new CubismVector2(0.1,0.1);
 			model.physics.setOptions(op)

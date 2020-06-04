@@ -12,8 +12,12 @@ loadLib("libs/laya.core.js")
 loadLib("libs/laya.ui.js")
 loadLib("libs/laya.physics.js")
 //-----libs-end-------
+if(!window.atob){
+  var base64 = require("base64.js").Base64;
+  window.atob = base64.atob;
+  window.btoa = base64.btoa;
+}
 require("live2dcubismcore.js")
 setTimeout(()=>{
-
   require("js/bundle.js");
-},16);
+},100);

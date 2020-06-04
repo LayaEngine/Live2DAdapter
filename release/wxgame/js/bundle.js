@@ -243,7 +243,7 @@
         CubismLogPrint(level, fmt + '\n', args);
     };
     const CSM_ASSERT = (expr) => {
-        console.assert(expr);
+        console.assert&&console.assert(expr);
     };
     let CubismLogVerbose;
     let CubismLogDebug;
@@ -7422,8 +7422,8 @@
                 Laya["PhysicsDebugDraw"].enable();
             if (GameConfig.stat)
                 Laya.Stat.show();
+                Laya.Browser.onMiniGame&&(Laya.URL.basePath = "http://10.10.20.48:8900/bin/")
             Laya.alertGlobalError(true);
-            Laya.URL.basePath = "https://10.10.82.100:9001/";
             CubismShader_WebGL.__init__();
             CubismShader_WebGL.getInstance().generateShaders();
             Delegate.instance.initializeCubism();

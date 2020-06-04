@@ -37,7 +37,6 @@ export default class Live2DLoader extends Laya.EventDispatcher{
     private _setting:CubismModelSettingJson;
     /**读取的所有的Json数据 */
     public jsonUrls:Array<string>;
-
     constructor(){
         super();
         this.jsonUrls=[];
@@ -58,6 +57,11 @@ export default class Live2DLoader extends Laya.EventDispatcher{
     }
 
     private _loadAssetsComplete(buffer:ArrayBuffer){
+        if(!buffer){
+            console.error("loadAssets fail!");
+            this._completeHandler&&this._completeHandler.run();
+            return;
+        }
         this._model.createSetting(buffer);
         this._setting = this._model.setting;
         this.state = LoadStep.LoadModel;
@@ -81,6 +85,11 @@ export default class Live2DLoader extends Laya.EventDispatcher{
     }
 
     private _setupModelComplete(buffer:ArrayBuffer):void{
+        if(!buffer){
+            console.error("loadModel fail!");
+            this._completeHandler&&this._completeHandler.run();
+            return;
+        }
         this._model.loadModel(buffer);
         this.state = LoadStep.LoadExpression;
         this.loadCubismExpression();
@@ -113,7 +122,10 @@ export default class Live2DLoader extends Laya.EventDispatcher{
     private _loadCubismExpressionComplete(count:number):void{
         for (let i = 0; i < count; i++) {
             let buffer:ArrayBuffer = Laya.loader.getRes(this._model._expressionUrls[i]);
-            this._model.loadExpression(buffer,buffer.byteLength,this._model._expressionNames[i]);
+            if(!buffer){
+                console.log(`[WARNNING]:${this._model._expressionUrls[i]} data load fail!`);
+            }else
+                this._model.loadExpression(buffer,buffer.byteLength,this._model._expressionNames[i]);
         }
         this._model._expressionUrls = null;
         this.state = LoadStep.LoadPhysics;
@@ -137,7 +149,11 @@ export default class Live2DLoader extends Laya.EventDispatcher{
     }
 
     private _loadCubismPhysicsComplete(buffer:ArrayBuffer):void{
-        this._model.loadPhysics(buffer,buffer.byteLength);
+        if(!buffer){
+            console.log("[WARNNING]:Physics data load fail!");
+        }else{
+            this._model.loadPhysics(buffer,buffer.byteLength);
+        }
         this.state = LoadStep.LoadPose;
         this.loadCubismPose();
     }
@@ -158,7 +174,10 @@ export default class Live2DLoader extends Laya.EventDispatcher{
     }
 
     private _loadCubismPoseComplete(buffer:ArrayBuffer):void{
-        this._model.loadPose(buffer,buffer.byteLength);
+        if(!buffer){
+            console.log("[WARNNING]:Pose data load fail!");
+        }else
+            this._model.loadPose(buffer,buffer.byteLength);
         this.state = LoadStep.SetupEyeBlink;
         this.detailsinit();
     }
@@ -181,7 +200,11 @@ export default class Live2DLoader extends Laya.EventDispatcher{
     }
 
     private _loadUserDataComplete(buffer:ArrayBuffer):void{
-        this._model.loadUserData(buffer,buffer.byteLength);
+        if(!buffer){
+            console.log("[WARNNING]:UserData load fail!");
+        }else{
+            this._model.loadUserData(buffer,buffer.byteLength);
+        }
         this.state = LoadStep.SetupEyeBlinkIds;
         this.detailsinit2();
     }
@@ -218,7 +241,7 @@ export default class Live2DLoader extends Laya.EventDispatcher{
             group = motionGroups[i];
             count = this._setting.getMotionCount(group)
             for (let j = 0; j < count; j++) {
-               motionFileName = `${this._modelHomeDir}/${this._setting.getMotionFileName(group, j)}`;
+              motionFileName = `${this._modelHomeDir}/${this._setting.getMotionFileName(group, j)}`;
               this.jsonUrls.push(motionFileName);
               this._model._motionUrls.push({
                 url:motionFileName,
@@ -229,7 +252,7 @@ export default class Live2DLoader extends Laya.EventDispatcher{
               });
             }
         }
-      }
+    }
 
     private _preLoadMotionGroupComplete():void{
         this._model.loadMotionGroup();
