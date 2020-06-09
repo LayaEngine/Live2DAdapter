@@ -70,7 +70,7 @@ class Main {
 		// }
 		//清理loader数据
 		(window as any).model = model; 
-		// model.renderer.setCutRectMaxXY(0,0)
+		model.renderer.setClipRect(0,0,125,750)
 		loader.clear();
 		model.on(Laya.Event.MOUSE_DOWN,this,this.onMouseDown);
 		model.on(Laya.Event.CHANGE,this,this.aboutEvent);
@@ -102,14 +102,14 @@ class Main {
 		}
 		let model = this._model;
 		if(model.live2DHitTest("Body",Laya.MouseManager.instance.mouseX ,Laya.MouseManager.instance.mouseY)){
-			// console.log("点击到了Body");
-			// model.setRandomExpression();
+			console.log("点击到了Body");
 			// model.startMotionByName("Idle","haru_g_idle",3);
-			model.startRandomMotion("TapBody",3);
+			model.startRandomMotion("Idle",3);
+			// model.startRandomMotion("TapBody",3);
 		}else
 		if (model.live2DHitTest("Head",Laya.MouseManager.instance.mouseX ,Laya.MouseManager.instance.mouseY) ){
 			console.log("点到Head了")
-			model.startRandomMotion("Idle",3);
+			model.setRandomExpression();
 		}
 		
 	}

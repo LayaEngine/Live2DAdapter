@@ -2005,24 +2005,26 @@ export namespace Live2DCubismFramework {
    */
   export class CubismRenderer_WebGL extends CubismRenderer {
     public owner:Live2DModel;
-    private _cutRect = [0,0,0,0]
+    private _cutRect = [0,0,0,0];
     /**
-     * 设置基于stage的裁剪区域 min点
-     * @param x 
-     * @param y 
+     * 获取基于stage的裁剪区域
+     * [minX,minY,maxX,maxY]
      */
-    public setCutRectMinXY(x:number,y:number):void{
-      this._cutRect[0] = x * Laya.stage.clientScaleX;
-      this._cutRect[3] = Laya.Browser.mainCanvas.height - y * Laya.stage.clientScaleY;
+    public getCilpRect():Array<number>{
+      return this._cutRect;
     }
     /**
-     * 设置基于stage的裁剪区域 max点
-     * @param x 
-     * @param y 
+     * 设置基于stage的裁剪区域
+     * @param minx 
+     * @param miny 
+     * @param maxx 
+     * @param maxy 
      */
-    public setCutRectMaxXY(x:number,y:number):void{
-      this._cutRect[2] = x * Laya.stage.clientScaleX;
-      this._cutRect[1] = Laya.Browser.mainCanvas.height - y * Laya.stage.clientScaleY;
+    public setClipRect(minx:number,miny:number,maxx:number,maxy:number):void{
+      this._cutRect[0] = minx * Laya.stage.clientScaleX;
+      this._cutRect[3] = Laya.Browser.mainCanvas.height - miny * Laya.stage.clientScaleY;
+      this._cutRect[2] = maxx * Laya.stage.clientScaleX;
+      this._cutRect[1] = Laya.Browser.mainCanvas.height - maxy * Laya.stage.clientScaleY;
     }
     /**
      * レンダラの初期化処理を実行する

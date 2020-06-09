@@ -431,8 +431,7 @@ export class Live2DModel extends Laya.Sprite{
       this._motionManager.stopAllMotions();
       this._initialized = true;
       this.createRenderer();
-      this.renderer.setCutRectMinXY(0,0)
-      this.renderer.setCutRectMaxXY(Laya.Browser.mainCanvas.width,Laya.Browser.mainCanvas.height);
+      this.renderer.setClipRect(0,0,Laya.stage.width,Laya.stage.height);
       this._texturePool = [];
       let element:any,texture:Laya.Texture2D,img:any;
       for (let index = 0; index < this._textureUrls.length; index++) {
@@ -873,6 +872,10 @@ export class Live2DModel extends Laya.Sprite{
      * @param y             判定を行うY座標
      */
     public live2DHitTest(hitArenaName: string, x: number, y: number):boolean{
+      let rect = this.renderer.getCilpRect(), cheight = Laya.Browser.mainCanvas.height;
+      if (x<rect[0]||x>rect[2]||y>cheight - rect[1]||y<cheight - rect[3]) {
+        return false;
+      }
       let count: number = this.setting.getHitAreasCount();
       for (let i = 0; i < count; i++) {
         if ( this.setting.getHitAreaName(i) == hitArenaName) {
