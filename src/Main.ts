@@ -70,7 +70,7 @@ class Main {
 		// }
 		//清理loader数据
 		(window as any).model = model; 
-		model.renderer.setCutRectMaxXY(0,0)
+		// model.renderer.setCutRectMaxXY(0,0)
 		loader.clear();
 		model.on(Laya.Event.MOUSE_DOWN,this,this.onMouseDown);
 		model.on(Laya.Event.CHANGE,this,this.aboutEvent);

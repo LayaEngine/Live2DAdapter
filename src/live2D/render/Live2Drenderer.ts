@@ -2273,7 +2273,7 @@ export namespace Live2DCubismFramework {
         this.gl.UNSIGNED_SHORT,
         0
       );
-
+      Laya.Stat.renderBatches ++;
       // 後処理
       this.gl.useProgram(null);
       this.setClippingContextBufferForDraw(null);
