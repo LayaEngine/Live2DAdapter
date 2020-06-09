@@ -58,13 +58,19 @@ class Main {
 		this._model = model;
 		model.initModel();
 		Laya.stage.addChild(model);
+		// var sp = new Laya.Sprite();
+		// sp.size(model.width/4,model.height/4);
+		// model.mask = sp;
+
 		model.scale(0.1,0.1);
-		if(model.physics){
-			let op =new Options();
-			op.wind = new CubismVector2(0.1,0.1);
-			model.physics.setOptions(op)
-		}
+		// if(model.physics){
+		// 	let op =new Options();
+		// 	op.wind = new CubismVector2(0.1,0.1);
+		// 	model.physics.setOptions(op)
+		// }
 		//清理loader数据
+		(window as any).model = model; 
+		model.renderer.setCutRectMaxXY(0,0)
 		loader.clear();
 		model.on(Laya.Event.MOUSE_DOWN,this,this.onMouseDown);
 		model.on(Laya.Event.CHANGE,this,this.aboutEvent);
@@ -81,7 +87,6 @@ class Main {
 		sp.x = Laya.stage.width - 100;
 		sp.on(Laya.Event.MOUSE_DOWN,this,this.changeModel)
 	}
-
 	
 	private aboutEvent(eventValue):void{
 		console.log(eventValue);

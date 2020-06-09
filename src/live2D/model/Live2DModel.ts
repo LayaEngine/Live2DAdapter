@@ -431,7 +431,8 @@ export class Live2DModel extends Laya.Sprite{
       this._motionManager.stopAllMotions();
       this._initialized = true;
       this.createRenderer();
-
+      this.renderer.setCutRectMinXY(0,0)
+      this.renderer.setCutRectMaxXY(Laya.Browser.mainCanvas.width,Laya.Browser.mainCanvas.height);
       this._texturePool = [];
       let element:any,texture:Laya.Texture2D,img:any;
       for (let index = 0; index < this._textureUrls.length; index++) {

@@ -41,7 +41,7 @@ const devServer_config = {
         port: 9000,
         host: "0.0.0.0",
         inline:true,
-        open:false,//自动弹出
+        open:true,//自动弹出
         useLocalIp: true,//是否使用本地IP
         publicPath:"/js/"
     },

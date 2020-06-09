@@ -47,6 +47,7 @@ export default class Live2DLoader extends Laya.EventDispatcher{
      * 从放置model3.json的目录和文件路径生成模型
      * @param dir 
      * @param fileName 
+     * @param complete 完成回调，失败时会返回null complete(model,thisloader)
      */
     public loadAssets(dir:string,fileName:string,complete:Laya.Handler = null):void{
         this._model =  new Live2DModel();

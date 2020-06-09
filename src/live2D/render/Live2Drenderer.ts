@@ -925,7 +925,8 @@ export namespace Live2DCubismFramework {
       baseColor: CubismTextureColor,
       isPremultipliedAlpha: boolean,
       matrix4x4: CubismMatrix44,
-      invertedMask: boolean
+      invertedMask: boolean,
+      cutArr:Array<number>
     ): void {
       if (!isPremultipliedAlpha) {
         console.error('NoPremultipliedAlpha is not allowed');
@@ -1031,7 +1032,7 @@ export namespace Live2DCubismFramework {
           renderer.getClippingContextBufferForDraw() != null; // この描画オブジェクトはマスク対象か
         const offset: number = masked ? (invertedMask ? 2 : 1) : 0;
 
-        let shaderSet: CubismShaderSet = new CubismShaderSet();
+        let shaderSet: CubismShaderSet;// = new CubismShaderSet();
 
         switch (colorBlendMode) {
           case CubismBlendMode.CubismBlendMode_Normal:
@@ -1155,6 +1156,14 @@ export namespace Live2DCubismFramework {
           baseColor.B,
           baseColor.A
         );
+
+        this.gl.uniform4f(
+          shaderSet.uniformCutRectLocation,
+          cutArr[0],
+          cutArr[1],
+          cutArr[2],
+          cutArr[3],
+        )
       }
 
       // IBOを作成し、データを転送
@@ -1269,6 +1278,13 @@ export namespace Live2DCubismFramework {
         this._shaderSets.at(0).shaderProgram,
         'u_baseColor'
       );
+      //Laya Add cut
+      this._shaderSets.at(
+        0
+      ).uniformCutRectLocation = this.gl.getUniformLocation(
+        this._shaderSets.at(0).shaderProgram,
+        'u_cutRect'
+      );
 
       // 通常（PremultipliedAlpha）
       this._shaderSets.at(
@@ -1298,6 +1314,13 @@ export namespace Live2DCubismFramework {
       ).uniformBaseColorLocation = this.gl.getUniformLocation(
         this._shaderSets.at(1).shaderProgram,
         'u_baseColor'
+      );
+      //Laya Add cut
+      this._shaderSets.at(
+        1
+      ).uniformCutRectLocation = this.gl.getUniformLocation(
+        this._shaderSets.at(1).shaderProgram,
+        'u_cutRect'
       );
 
       // 通常（クリッピング、PremultipliedAlpha）
@@ -1347,6 +1370,13 @@ export namespace Live2DCubismFramework {
         this._shaderSets.at(2).shaderProgram,
         'u_baseColor'
       );
+      //Laya Add cut
+      this._shaderSets.at(
+        2
+      ).uniformCutRectLocation = this.gl.getUniformLocation(
+        this._shaderSets.at(2).shaderProgram,
+        'u_cutRect'
+      );
 
       // 通常（クリッピング・反転, PremultipliedAlpha）
       this._shaderSets.at(
@@ -1395,6 +1425,13 @@ export namespace Live2DCubismFramework {
         this._shaderSets.at(3).shaderProgram,
         'u_baseColor'
       );
+      //Laya Add cut
+      this._shaderSets.at(
+        3
+      ).uniformCutRectLocation = this.gl.getUniformLocation(
+        this._shaderSets.at(3).shaderProgram,
+        'u_cutRect'
+      );
 
       // 加算（PremultipliedAlpha）
       this._shaderSets.at(
@@ -1424,6 +1461,13 @@ export namespace Live2DCubismFramework {
       ).uniformBaseColorLocation = this.gl.getUniformLocation(
         this._shaderSets.at(4).shaderProgram,
         'u_baseColor'
+      );
+      //Laya Add cut
+      this._shaderSets.at(
+        4
+      ).uniformCutRectLocation = this.gl.getUniformLocation(
+        this._shaderSets.at(4).shaderProgram,
+        'u_cutRect'
       );
 
       // 加算（クリッピング、PremultipliedAlpha）
@@ -1473,6 +1517,13 @@ export namespace Live2DCubismFramework {
         this._shaderSets.at(5).shaderProgram,
         'u_baseColor'
       );
+      //Laya Add cut
+      this._shaderSets.at(
+        5
+      ).uniformCutRectLocation = this.gl.getUniformLocation(
+        this._shaderSets.at(5).shaderProgram,
+        'u_cutRect'
+      );
 
       // 加算（クリッピング・反転、PremultipliedAlpha）
       this._shaderSets.at(
@@ -1521,6 +1572,13 @@ export namespace Live2DCubismFramework {
         this._shaderSets.at(6).shaderProgram,
         'u_baseColor'
       );
+      //Laya Add cut
+      this._shaderSets.at(
+        6
+      ).uniformCutRectLocation = this.gl.getUniformLocation(
+        this._shaderSets.at(6).shaderProgram,
+        'u_cutRect'
+      );
 
       // 乗算（PremultipliedAlpha）
       this._shaderSets.at(
@@ -1551,7 +1609,14 @@ export namespace Live2DCubismFramework {
         this._shaderSets.at(7).shaderProgram,
         'u_baseColor'
       );
-
+      //Laya Add cut
+      this._shaderSets.at(
+        7
+      ).uniformCutRectLocation = this.gl.getUniformLocation(
+        this._shaderSets.at(7).shaderProgram,
+        'u_cutRect'
+      );
+      
       // 乗算（クリッピング、PremultipliedAlpha）
       this._shaderSets.at(
         8
@@ -1598,6 +1663,13 @@ export namespace Live2DCubismFramework {
       ).uniformBaseColorLocation = this.gl.getUniformLocation(
         this._shaderSets.at(8).shaderProgram,
         'u_baseColor'
+      );
+      //Laya Add cut
+      this._shaderSets.at(
+        8
+      ).uniformCutRectLocation = this.gl.getUniformLocation(
+        this._shaderSets.at(8).shaderProgram,
+        'u_cutRect'
       );
 
       // 乗算（クリッピング・反転、PremultipliedAlpha）
@@ -1646,6 +1718,13 @@ export namespace Live2DCubismFramework {
       ).uniformBaseColorLocation = this.gl.getUniformLocation(
         this._shaderSets.at(9).shaderProgram,
         'u_baseColor'
+      );
+      //Laya Add cut
+      this._shaderSets.at(
+        9
+      ).uniformCutRectLocation = this.gl.getUniformLocation(
+        this._shaderSets.at(9).shaderProgram,
+        'u_cutRect'
       );
     }
 
@@ -1774,6 +1853,7 @@ export namespace Live2DCubismFramework {
     samplerTexture1Location: WebGLUniformLocation; // シェーダープログラムに渡す変数のアドレス（Texture1）
     uniformBaseColorLocation: WebGLUniformLocation; // シェーダープログラムに渡す変数のアドレス（BaseColor）
     uniformChannelFlagLocation: WebGLUniformLocation; // シェーダープログラムに渡す変数のアドレス（ChannelFlag）
+    uniformCutRectLocation:WebGLUniformLocation;//裁剪用vect4
   }
 
   export enum ShaderNames {
@@ -1826,7 +1906,7 @@ export namespace Live2DCubismFramework {
     '   gl_FragColor = u_channelFlag * texture2D(s_texture0, v_texCoord).a * isInside;' +
     '}';
 
-  //----- バーテックスシェーダプログラム -----
+  //----- 顶点着色器程序 -----
   // Normal & Add & Mult 共通
   export const vertexShaderSrc =
     'attribute vec4     a_position;' + //v.vertex
@@ -1840,7 +1920,7 @@ export namespace Live2DCubismFramework {
     '   v_texCoord.y = 1.0 - v_texCoord.y;' +
     '}';
 
-  // Normal & Add & Mult 共通（クリッピングされたものの描画用）
+  // Normal & Add & Mult 共通（用于绘制剪裁的一个）
   export const vertexShaderSrcMasked =
     'attribute vec4     a_position;' +
     'attribute vec2     a_texCoord;' +
@@ -1856,19 +1936,25 @@ export namespace Live2DCubismFramework {
     '   v_texCoord.y = 1.0 - v_texCoord.y;' +
     '}';
 
-  //----- フラグメントシェーダプログラム -----
+  //----- 片段着色器程序 -----
   // Normal & Add & Mult 共通 （PremultipliedAlpha）
+  //u_cutRect minx,miny,maxx,maxy
   export const fragmentShaderSrcPremultipliedAlpha =
-    'precision mediump float;' +
-    'varying vec2       v_texCoord;' + //v2f.texcoord
-    'uniform vec4       u_baseColor;' +
-    'uniform sampler2D  s_texture0;' + //_MainTex
-    'void main()' +
-    '{' +
-    '   gl_FragColor = texture2D(s_texture0 , v_texCoord) * u_baseColor;' +
-    '}';
+   `precision mediump float;
+    varying vec2       v_texCoord; 
+    uniform vec4       u_baseColor;
+    uniform sampler2D  s_texture0;
+    uniform vec4       u_cutRect;
+    void main()
+    {
+      if(gl_FragCoord.x<u_cutRect.x)discard;
+      if(gl_FragCoord.y<u_cutRect.y)discard;
+      if(gl_FragCoord.x>u_cutRect.z)discard;
+      if(gl_FragCoord.y>u_cutRect.w)discard;
+      gl_FragColor = texture2D(s_texture0 , v_texCoord) * u_baseColor;
+    }`;
 
-  // Normal （クリッピングされたものの描画用、PremultipliedAlpha兼用）
+  // Normal （用于绘图剪裁、PremultipliedAlpha兼用）
   export const fragmentShaderSrcMaskPremultipliedAlpha =
     'precision mediump float;' +
     'varying vec2       v_texCoord;' +
@@ -1877,8 +1963,13 @@ export namespace Live2DCubismFramework {
     'uniform vec4       u_channelFlag;' +
     'uniform sampler2D  s_texture0;' +
     'uniform sampler2D  s_texture1;' +
+    'uniform vec4       u_cutRect;' +
     'void main()' +
     '{' +
+    'if(gl_FragCoord.x<u_cutRect.x)discard;'+
+    'if(gl_FragCoord.y<u_cutRect.y)discard;'+
+    'if(gl_FragCoord.x>u_cutRect.z)discard;'+
+    'if(gl_FragCoord.y>u_cutRect.w)discard;'+
     '   vec4 col_formask = texture2D(s_texture0 , v_texCoord) * u_baseColor;' +
     '   vec4 clipMask = (1.0 - texture2D(s_texture1, v_clipPos.xy / v_clipPos.w)) * u_channelFlag;' +
     '   float maskVal = clipMask.r + clipMask.g + clipMask.b + clipMask.a;' +
@@ -1886,7 +1977,7 @@ export namespace Live2DCubismFramework {
     '   gl_FragColor = col_formask;' +
     '}';
 
-  // Normal & Add & Mult 共通（クリッピングされて反転使用の描画用、PremultipliedAlphaの場合）
+  // Normal & Add & Mult 共通（剪切和倒转以供绘图使用、PremultipliedAlphaの場合）
   export const fragmentShaderSrcMaskInvertedPremultipliedAlpha =
     'precision mediump float;' +
     'varying vec2 v_texCoord;' +
@@ -1895,8 +1986,13 @@ export namespace Live2DCubismFramework {
     'uniform sampler2D s_texture1;' +
     'uniform vec4 u_channelFlag;' +
     'uniform vec4 u_baseColor;' +
+    'uniform vec4 u_cutRect;'+
     'void main()' +
     '{' +
+    'if(gl_FragCoord.x<u_cutRect.x)discard;'+
+    'if(gl_FragCoord.y<u_cutRect.y)discard;'+
+    'if(gl_FragCoord.x>u_cutRect.z)discard;'+
+    'if(gl_FragCoord.y>u_cutRect.w)discard;'+
     'vec4 col_formask = texture2D(s_texture0, v_texCoord) * u_baseColor;' +
     'vec4 clipMask = (1.0 - texture2D(s_texture1, v_clipPos.xy / v_clipPos.w)) * u_channelFlag;' +
     'float maskVal = clipMask.r + clipMask.g + clipMask.b + clipMask.a;' +
@@ -1909,6 +2005,25 @@ export namespace Live2DCubismFramework {
    */
   export class CubismRenderer_WebGL extends CubismRenderer {
     public owner:Live2DModel;
+    private _cutRect = [0,0,0,0]
+    /**
+     * 设置基于stage的裁剪区域 min点
+     * @param x 
+     * @param y 
+     */
+    public setCutRectMinXY(x:number,y:number):void{
+      this._cutRect[0] = x * Laya.stage.clientScaleX;
+      this._cutRect[3] = Laya.Browser.mainCanvas.height - y * Laya.stage.clientScaleY;
+    }
+    /**
+     * 设置基于stage的裁剪区域 max点
+     * @param x 
+     * @param y 
+     */
+    public setCutRectMaxXY(x:number,y:number):void{
+      this._cutRect[2] = x * Laya.stage.clientScaleX;
+      this._cutRect[1] = Laya.Browser.mainCanvas.height - y * Laya.stage.clientScaleY;
+    }
     /**
      * レンダラの初期化処理を実行する
      * 引数に渡したモデルからレンダラの初期化処理に必要な情報を取り出すことができる
@@ -2147,7 +2262,8 @@ export namespace Live2DCubismFramework {
         modelColorRGBA,
         this.isPremultipliedAlpha(),
         this.getMvpMatrix(),
-        invertedMask
+        invertedMask,
+        this._cutRect
       );
 
       // ポリゴンメッシュを描画する
