@@ -464,12 +464,12 @@ export class Live2DModel extends Laya.Sprite{
         this._lastMat.d = _cMat.d;
         hasChange = true;
       }
-      if(_cMat.tx != this._lastMat.tx){
-        this._lastMat.tx = _cMat.tx;
+      if(_cMat.tx  + _cMat.a * x!= this._lastMat.tx ){
+        this._lastMat.tx = _cMat.tx + _cMat.a *x;
         hasChange = true;
       }
-      if(this._lastMat.ty != _cMat.ty){
-        this._lastMat.ty = _cMat.ty;
+      if(this._lastMat.ty  != _cMat.ty + _cMat.d * y){
+        this._lastMat.ty = _cMat.ty + _cMat.d * y;
         hasChange = true;
       }
       hasChange&&this.refreshScaleAndTranM();

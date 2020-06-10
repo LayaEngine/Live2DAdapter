@@ -24,8 +24,8 @@ class Main {
 		Laya["DebugPanel"] && Laya["DebugPanel"].enable();
 		Laya.stage.scaleMode = GameConfig.scaleMode;
 		Laya.stage.screenMode = Laya.Stage.SCREEN_HORIZONTAL;
-		Laya.stage.alignV = GameConfig.alignV;
-		Laya.stage.alignH = GameConfig.alignH;
+		// Laya.stage.alignV = GameConfig.alignV;
+		// Laya.stage.alignH = GameConfig.alignH;
 		//兼容微信不支持加载scene后缀场景
 		Laya.URL.exportSceneToJson = GameConfig.exportSceneToJson;
 		//打开调试面板（通过IDE设置调试模式，或者url地址增加debug=true参数，均可打开调试面板）
@@ -40,7 +40,8 @@ class Main {
 		CubismShader_WebGL.getInstance().generateShaders();
 		//初始化live2d计时
 		Delegate.instance.initializeCubism();
-		this.initRedBtn();
+		// this.initRedBtn();
+		this.changeModel()
 	}
 	private changeModel(){
 		if (this._model) {
@@ -60,20 +61,28 @@ class Main {
 			Laya.stage.addChild(this.sp);
 		}
 		this._model = model;
+		// this._model.addChild(this.sp);
+		// model.pivot(model.width/2,model.height/2)
 		model.initModel();
-		// Laya.stage.addChildAt(model,2);
+		// Laya.stage.addChild(model);
 		this.sp.addChild(model);
-		model.scale(0.1,0.1);
+		// model.scale(0.1,0.1);
 		//清理loader数据
 		(window as any).model = model; 
 		this.sp.anchorX = .5;
 		this.sp.size(model.width*model.scaleX,model.height*model.scaleY);
+		// this.sp.size(model.width,model.height);
+		// debugger
+		this.sp.scale(0.1,0.1);
 		this.sp.graphics.clear();
 		// var tt = new Laya.Sprite();
 		// this.sp.addChild(tt);
-		// tt.graphics.drawRect(0,0,this.sp.width,this.sp.height,"red");
 		this.sp.graphics.drawRect(0,0,this.sp.width,this.sp.height,"red");
-		this.sp.pos(this.sp.width/2,0);
+		// model.renderer.setClipRect(0,0,model.width*model.scaleX/2,model.height*model.scaleY/2)
+		// this.sp.graphics.drawRect(0,0,this.sp.width,this.sp.height,"red");
+		// this.sp.pos(this.sp.width * this.sp.scaleX/2,0);
+		// model.pos(model.width * model.scaleX/2,model.height * model.scaleY/2);
+		this.sp.bottom = 0;
 		loader.clear();
 		model.on(Laya.Event.MOUSE_DOWN,this,this.onMouseDown);
 		model.on(Laya.Event.CHANGE,this,this.aboutEvent);
