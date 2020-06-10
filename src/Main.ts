@@ -8,7 +8,6 @@ import { Live2DCubismFramework as cubismvector2 } from './framework/math/cubismv
 import CubismVector2 = cubismvector2.CubismVector2;
 import CubismShader_WebGL = Live2Drenderer.CubismShader_WebGL;
 import Options = cubismphysics.Options;
-import GameUI from "./script/GameUI";
 
 
 class Main {
@@ -17,7 +16,7 @@ class Main {
 		"Haru","Hiyori","Mark","Natori","Rice"
 	];
 	private index:number = 0;
-	private sp;
+	private sp:Laya.Box;
 	constructor() {
 		Config.useRetinalCanvas=true;
 		Laya.init(GameConfig.width,GameConfig.height, Laya["WebGL"]);
@@ -57,18 +56,24 @@ class Main {
 	private _loadSuccess(model:Live2DModel,loader:Live2DLoader){
 		if(!model)return;
 		if(!this.sp){
-			this.sp = new Laya.Sprite();
+			this.sp = new Laya.Box();
 			Laya.stage.addChild(this.sp);
 		}
 		this._model = model;
 		model.initModel();
-		Laya.stage.addChildAt(model,2);
+		// Laya.stage.addChildAt(model,2);
+		this.sp.addChild(model);
 		model.scale(0.1,0.1);
 		//清理loader数据
 		(window as any).model = model; 
-		// model.renderer.setClipRect(0,0,model.width*model.scaleX/2,model.height*model.scaleY/2)
+		this.sp.anchorX = .5;
+		this.sp.size(model.width*model.scaleX,model.height*model.scaleY);
 		this.sp.graphics.clear();
-		this.sp.graphics.drawRect(0,0,model.width*model.scaleX/2,model.height*model.scaleY/2,"red")
+		// var tt = new Laya.Sprite();
+		// this.sp.addChild(tt);
+		// tt.graphics.drawRect(0,0,this.sp.width,this.sp.height,"red");
+		this.sp.graphics.drawRect(0,0,this.sp.width,this.sp.height,"red");
+		this.sp.pos(this.sp.width/2,0);
 		loader.clear();
 		model.on(Laya.Event.MOUSE_DOWN,this,this.onMouseDown);
 		model.on(Laya.Event.CHANGE,this,this.aboutEvent);
