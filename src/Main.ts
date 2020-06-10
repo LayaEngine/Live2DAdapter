@@ -17,6 +17,7 @@ class Main {
 		"Haru","Hiyori","Mark","Natori","Rice"
 	];
 	private index:number = 0;
+	private sp;
 	constructor() {
 		Config.useRetinalCanvas=true;
 		Laya.init(GameConfig.width,GameConfig.height, Laya["WebGL"]);
@@ -55,22 +56,19 @@ class Main {
 
 	private _loadSuccess(model:Live2DModel,loader:Live2DLoader){
 		if(!model)return;
+		if(!this.sp){
+			this.sp = new Laya.Sprite();
+			Laya.stage.addChild(this.sp);
+		}
 		this._model = model;
 		model.initModel();
-		Laya.stage.addChild(model);
-		// var sp = new Laya.Sprite();
-		// sp.size(model.width/4,model.height/4);
-		// model.mask = sp;
-
+		Laya.stage.addChildAt(model,2);
 		model.scale(0.1,0.1);
-		// if(model.physics){
-		// 	let op =new Options();
-		// 	op.wind = new CubismVector2(0.1,0.1);
-		// 	model.physics.setOptions(op)
-		// }
 		//清理loader数据
 		(window as any).model = model; 
-		model.renderer.setClipRect(0,0,125,750)
+		// model.renderer.setClipRect(0,0,model.width*model.scaleX/2,model.height*model.scaleY/2)
+		this.sp.graphics.clear();
+		this.sp.graphics.drawRect(0,0,model.width*model.scaleX/2,model.height*model.scaleY/2,"red")
 		loader.clear();
 		model.on(Laya.Event.MOUSE_DOWN,this,this.onMouseDown);
 		model.on(Laya.Event.CHANGE,this,this.aboutEvent);
@@ -104,8 +102,8 @@ class Main {
 		if(model.live2DHitTest("Body",Laya.MouseManager.instance.mouseX ,Laya.MouseManager.instance.mouseY)){
 			console.log("点击到了Body");
 			// model.startMotionByName("Idle","haru_g_idle",3);
-			model.startRandomMotion("Idle",3);
-			// model.startRandomMotion("TapBody",3);
+			// model.startRandomMotion("Idle",3);
+			model.startRandomMotion("TapBody",3);
 		}else
 		if (model.live2DHitTest("Head",Laya.MouseManager.instance.mouseX ,Laya.MouseManager.instance.mouseY) ){
 			console.log("点到Head了")

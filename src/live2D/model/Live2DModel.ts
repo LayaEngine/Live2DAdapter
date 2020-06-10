@@ -221,8 +221,8 @@ export class Live2DModel extends Laya.Sprite{
         scaleNum = this.modelHeight *2 / width;
       }
       this.projection.scale(scaleNum , scaleNum * width/height);
-      this.width = this.modelWidth / Laya.stage.clientScaleX;
-      this.height = this.modelHeight / Laya.stage.clientScaleY;
+      this.width = this.modelWidth;
+      this.height = this.modelHeight;
     } 
 
     public createSetting(buffer:ArrayBuffer):void{
