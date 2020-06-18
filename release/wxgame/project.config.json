@@ -21,7 +21,7 @@
 		}
 	},
 	"compileType": "game",
-	"libVersion": "2.11.0",
+	"libVersion": "2.11.2",
 	"appid": "wx9170ca1ff6f31088",
 	"projectname": "layaWXTest",
 	"simulatorType": "wechat",

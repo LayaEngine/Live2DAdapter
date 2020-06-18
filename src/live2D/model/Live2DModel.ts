@@ -147,6 +147,8 @@ export class Live2DModel extends Laya.Sprite{
     private _defaultGroup:string;
     /** 文件名映射列表 */
     private _fileMap:object;
+    /**是否自动轮播默认组动画 */
+    public isAutoPlay:boolean = true;
 
     constructor(){
       super();
@@ -492,10 +494,12 @@ export class Live2DModel extends Laya.Sprite{
       this._model.loadParameters(); // 前回セーブされた状態をロード
       if (this._motionManager.isFinished()) {
         // 如果没有动作播放，则从待机动作中随机播放
-        this.startRandomMotion(
-          this._defaultGroup,
-          3
-        );
+        if(this.isAutoPlay){
+          this.startRandomMotion(
+            this._defaultGroup,
+            3
+          );
+        }
       } else {
         motionUpdated = this._motionManager.updateMotion(
           this._model,

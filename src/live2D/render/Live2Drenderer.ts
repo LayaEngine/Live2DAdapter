@@ -28,6 +28,7 @@ import CubismRenderer = cubismrenderer.CubismRenderer;
 import CubismBlendMode = cubismrenderer.CubismBlendMode;
 import CubismTextureColor = cubismrenderer.CubismTextureColor;
 import { Live2DModel } from '../model/Live2DModel';
+import { Live2DSubmit } from './Live2DSubmit';
 
 export namespace Live2DCubismFramework {
   const ColorChannelCount = 4; // 実験時に1チャンネルの場合は1、RGBだけの場合は3、アルファも含める場合は4
@@ -855,6 +856,7 @@ export namespace Live2DCubismFramework {
         CubismShader_WebGL.getInstance();
         CubismShader_WebGL.gl = (window as any).Laya.LayaGL.instance;
         s_fbo = CubismShader_WebGL.gl.getParameter(CubismShader_WebGL.gl.FRAMEBUFFER_BINDING);
+        Live2DSubmit.__init__(CubismShader_WebGL.gl);
     }
     /**
      * インスタンスを取得する（シングルトン）

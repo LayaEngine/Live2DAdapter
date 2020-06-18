@@ -5,6 +5,25 @@ export class Live2DSubmit implements laya.webgl.submit.ISubmit{
     private _model:Live2DModel;
     _key:any = {};
     private saveParameter:any;
+    private static _gl:WebGLRenderingContext;
+    private static isMark:boolean = true;
+    private static _curAB:WebGLBuffer;
+    private static _curEAB:WebGLBuffer;
+    public static __init__(gl:WebGLRenderingContext){
+        Live2DSubmit._gl =gl;
+        var _originBindBuffer = gl.bindBuffer;
+        function bindBuffer (target: GLenum, buffer: WebGLBuffer | null):void{
+            if(Live2DSubmit.isMark){
+                if(target == Live2DSubmit._gl.ARRAY_BUFFER){
+                    Live2DSubmit._curAB = buffer;
+                }else if(target == Live2DSubmit._gl.ELEMENT_ARRAY_BUFFER){
+                    Live2DSubmit._curEAB = buffer;
+                }
+            }
+            _originBindBuffer.call(Live2DSubmit._gl,target,buffer);
+        }
+        gl.bindBuffer = bindBuffer;
+    }
     constructor(){
     }
     public init(model){
@@ -14,9 +33,11 @@ export class Live2DSubmit implements laya.webgl.submit.ISubmit{
     }
     renderSubmit():number{
         Live2DTime.updateTime();
+        Live2DSubmit.isMark = false;
         this.start()
         this._model.update(Live2DTime.getDeltaTime());
         this.end();
+        Live2DSubmit.isMark = true;
         return 1;
     }
 
@@ -84,7 +105,8 @@ export class Live2DSubmit implements laya.webgl.submit.ISubmit{
      * 还原状态
      */
     end():void{
-        let gl:WebGLRenderingContext = (Laya.WebGLContext as any).mainContext
+        let _webglContext:any = Laya.WebGLContext;
+        let gl:WebGLRenderingContext = _webglContext.mainContext
         if(this.saveParameter.BLEND){
             gl.enable(gl.BLEND);
         }else
@@ -107,20 +129,42 @@ export class Live2DSubmit implements laya.webgl.submit.ISubmit{
         if(this.saveParameter.DEPTH_TEST){
             gl.enable(gl.DEPTH_TEST);
         }
-        gl.bindTexture(gl.TEXTURE_2D,this.saveParameter.bindTexture);
-        gl.bindFramebuffer(gl.FRAMEBUFFER,this.saveParameter.FRAMEBUFFER_BINDING);
+        
+        if(this.saveParameter.bindTexture){
+            gl.bindTexture(gl.TEXTURE_2D,this.saveParameter.bindTexture);
+        }else{
+            gl.bindTexture(gl.TEXTURE_2D, _webglContext._activeTextures[_webglContext._activedTextureID - gl.TEXTURE0])
+        }
+        
         gl.blendFuncSeparate(this.saveParameter.BLEND_SRC_RGB,this.saveParameter.BLEND_DST_RGB,this.saveParameter.BLEND_SRC_ALPHA,this.saveParameter.BLEND_DST_ALPHA);
         gl.frontFace(this.saveParameter.frontFace);
-        gl.useProgram(this.saveParameter.program);
-        gl.bindBuffer(gl.ARRAY_BUFFER,this.saveParameter.ARRAY_BUFFER_BINDING);
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,this.saveParameter.ELEMENT_ARRAY_BUFFER_BINDING);
 
+        if(this.saveParameter.program){
+            gl.useProgram(this.saveParameter.program);
+        }else{
+            gl.useProgram(_webglContext._useProgram);
+        }
+
+        if(this.saveParameter.ARRAY_BUFFER_BINDING){
+            gl.bindBuffer(gl.ARRAY_BUFFER,this.saveParameter.ARRAY_BUFFER_BINDING);
+        }else{
+            gl.bindBuffer(gl.ARRAY_BUFFER,Live2DSubmit._curAB);
+        }
+        
         let vertexs = this.saveParameter.vertexs;
         for (let index = 0; index < vertexs.length; index++) {
             const element = vertexs[index];
-            gl.bindBuffer(gl.ARRAY_BUFFER,element.buffer);
-            gl.enableVertexAttribArray(element.index);
-            gl.vertexAttribPointer(element.index,element.size,element.type,element.normalized,element.stride,element.offset);
+            // gl.bindBuffer(gl.ARRAY_BUFFER,element.buffer);
+            if(element.buffer == this.saveParameter.ARRAY_BUFFER_BINDING||!this.saveParameter.ARRAY_BUFFER_BINDING){
+                gl.enableVertexAttribArray(element.index);
+                gl.vertexAttribPointer(element.index,element.size,element.type,element.normalized,element.stride,element.offset);
+            }
+        }
+        
+        if(this.saveParameter.ELEMENT_ARRAY_BUFFER_BINDING){
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,this.saveParameter.ELEMENT_ARRAY_BUFFER_BINDING);
+        }else{
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,Live2DSubmit._curEAB);
         }
     }
 

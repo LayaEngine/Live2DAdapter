@@ -40,9 +40,9 @@ class Main {
 		CubismShader_WebGL.getInstance().generateShaders();
 		//初始化live2d计时
 		Delegate.instance.initializeCubism();
-		// this.initRedBtn();
-		this.changeModel()
+		this.initRedBtn();
 	}
+
 	private changeModel(){
 		if (this._model) {
 			this._model.destroy();
@@ -61,28 +61,33 @@ class Main {
 			Laya.stage.addChild(this.sp);
 		}
 		this._model = model;
+		model.isAutoPlay = false;
 		// this._model.addChild(this.sp);
 		// model.pivot(model.width/2,model.height/2)
 		model.initModel();
-		// Laya.stage.addChild(model);
-		this.sp.addChild(model);
-		// model.scale(0.1,0.1);
+		Laya.stage.addChild(model);
+		// this.sp.addChild(model);
+		model.scale(0.1,0.1);
 		//清理loader数据
 		(window as any).model = model; 
 		this.sp.anchorX = .5;
 		this.sp.size(model.width*model.scaleX,model.height*model.scaleY);
 		// this.sp.size(model.width,model.height);
 		// debugger
-		this.sp.scale(0.1,0.1);
+		this.sp.scale(0.05,0.05);
 		this.sp.graphics.clear();
 		// var tt = new Laya.Sprite();
 		// this.sp.addChild(tt);
-		this.sp.graphics.drawRect(0,0,this.sp.width,this.sp.height,"red");
-		// model.renderer.setClipRect(0,0,model.width*model.scaleX/2,model.height*model.scaleY/2)
+		// tt.size(model.width/2,model.height/2)
+		// tt.graphics.drawRect(0,0,tt.width,tt.height,"green")
 		// this.sp.graphics.drawRect(0,0,this.sp.width,this.sp.height,"red");
-		// this.sp.pos(this.sp.width * this.sp.scaleX/2,0);
+		// tt.alpha =  0.5;
+		// model.renderer.setClipRect(0,0,model.width*model.scaleX/2,model.height*model.scaleY/2)
+		// model.renderer.setClipRect(0,0,this.sp.width*this.sp.scaleX/2,this.sp.height*this.sp.scaleY/2);
+		// this.sp.graphics.drawRect(0,0,this.sp.width,this.sp.height,"red");
+		this.sp.pos(this.sp.width * this.sp.scaleX/2,0);
 		// model.pos(model.width * model.scaleX/2,model.height * model.scaleY/2);
-		this.sp.bottom = 0;
+		// this.sp.bottom = 0;
 		loader.clear();
 		model.on(Laya.Event.MOUSE_DOWN,this,this.onMouseDown);
 		model.on(Laya.Event.CHANGE,this,this.aboutEvent);
@@ -115,8 +120,6 @@ class Main {
 		let model = this._model;
 		if(model.live2DHitTest("Body",Laya.MouseManager.instance.mouseX ,Laya.MouseManager.instance.mouseY)){
 			console.log("点击到了Body");
-			// model.startMotionByName("Idle","haru_g_idle",3);
-			// model.startRandomMotion("Idle",3);
 			model.startRandomMotion("TapBody",3);
 		}else
 		if (model.live2DHitTest("Head",Laya.MouseManager.instance.mouseX ,Laya.MouseManager.instance.mouseY) ){
