@@ -476,7 +476,7 @@ export class Live2DModel extends Laya.Sprite{
       }
       hasChange&&this.refreshScaleAndTranM();
       context.addRenderObject(Live2DSubmit.create(this));
-      (context as any)._curSubmit = Laya.SubmitBase.RENDERBASE;
+      context.breakNextMerge();
     }
     /**
      * 动画更新
